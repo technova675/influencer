@@ -1,0 +1,367 @@
+@import "tailwindcss";
+
+/* ===========================================================================
+   Design tokens
+   Serif display + Inter body, warm off-white grounds that shift per section.
+   One accent. No pure black, no pure white.
+   =========================================================================== */
+
+:root {
+  --ground: #f4f4f2;
+  --ground-raised: #ffffff;
+  --ink: #16161a;
+  --ink-soft: #55555f;
+  --ink-faint: #8c8c96;
+  --line: #e2e2dd;
+  --accent: #1e40ff;
+  --accent-soft: #e8ecff;
+  --accent-ink: #ffffff;
+
+  /* Section grounds, in scroll order */
+  --ground-1: #eef1fb;
+  --ground-2: #f7f7f5;
+  --ground-3: #fdf0f2;
+  --ground-4: #eef6f0;
+  --ground-5: #f2f2ef;
+
+  --radius: 14px;
+  --radius-lg: 22px;
+
+  --shadow-sm: 0 1px 2px rgb(22 22 26 / 0.05), 0 1px 3px rgb(22 22 26 / 0.04);
+  --shadow-md: 0 4px 6px -1px rgb(22 22 26 / 0.06), 0 12px 28px -8px rgb(22 22 26 / 0.12);
+  --shadow-lg: 0 8px 12px -4px rgb(22 22 26 / 0.06), 0 32px 64px -16px rgb(22 22 26 / 0.16);
+}
+
+@theme inline {
+  --color-ground: var(--ground);
+  --color-raised: var(--ground-raised);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  --radius-card: var(--radius);
+  --radius-xl2: var(--radius-lg);
+}
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------------------------------------------------------------------------
+   Type. Tracking tightens as size grows; measure capped at ~68ch.
+   --------------------------------------------------------------------------- */
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  font-variation-settings: "SOFT" 0, "WONK" 1;
+}
+
+.display-sm {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.measure {
+  max-width: 62ch;
+}
+
+.overline {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Serif stat with a dotted underline. The rule is what makes a number read as
+   evidence rather than dashboard output - so it belongs on measured figures
+   only, never on ordinals like a step number. */
+.stat-figure {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  border-bottom: 1.5px dotted color-mix(in srgb, var(--ink) 28%, transparent);
+  padding-bottom: 0.08em;
+}
+
+/* Serif numerals with no rule - ordinals, step markers, counters. */
+.figure-plain {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------------------
+   Section grounds. The colour change is the section break - no borders.
+   --------------------------------------------------------------------------- */
+
+.ground-1 { background: var(--ground-1); }
+.ground-2 { background: var(--ground-2); }
+.ground-3 { background: var(--ground-3); }
+.ground-4 { background: var(--ground-4); }
+.ground-5 { background: var(--ground-5); }
+
+/* Soft vertical blend between adjacent grounds */
+.ground-blend {
+  background-image: linear-gradient(
+    to bottom,
+    var(--from) 0%,
+    var(--to) 100%
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Components
+   --------------------------------------------------------------------------- */
+
+.card {
+  background: var(--ground-raised);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  padding: 0.75rem 1.5rem;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.18s ease, background-color 0.18s ease, opacity 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn:active { transform: translateY(1px) scale(0.99); }
+
+.btn-primary {
+  background: var(--ink);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.btn-primary:hover {
+  background: #000;
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: var(--shadow-sm);
+}
+.btn-accent:hover {
+  filter: brightness(1.08);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  background: var(--ground-raised);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.btn-ghost:hover {
+  border-color: color-mix(in srgb, var(--ink) 22%, transparent);
+  transform: translateY(-1px);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 999px;
+  padding: 0.3125rem 0.6875rem;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.pill-accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* Form controls */
+.field {
+  width: 100%;
+  background: var(--ground-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.6875rem 0.875rem;
+  font-size: 0.9375rem;
+  color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field::placeholder { color: var(--ink-faint); }
+
+.field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.field[aria-invalid="true"] {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 3px rgb(192 57 43 / 0.1);
+}
+
+.label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  margin-bottom: 0.4375rem;
+}
+
+/* Checkbox / radio rendered as a selectable chip */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.4375rem 0.875rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--line);
+  background: var(--ground-raised);
+  color: var(--ink-soft);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.chip:hover { border-color: color-mix(in srgb, var(--ink) 25%, transparent); }
+
+.chip:has(input:checked) {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.chip:has(input:focus-visible) {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.chip input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Motion. Scroll reveal, honouring reduced-motion.
+   --------------------------------------------------------------------------- */
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Content is visible by default. The hidden state is applied only once JS has
+   confirmed it can reveal it again (html.js-reveal), so a failed script, a
+   crawler, or a section parked at the document bottom can never leave copy
+   stranded at opacity 0.
+   Scroll-driven `animation-timeline: view()` was tried first and is not usable
+   here: a section at the end of the document can never finish an `entry`
+   range, because the page runs out of scroll before it does. */
+.reveal {
+  opacity: 1;
+}
+
+html.js-reveal .reveal:not(.is-visible) {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+html.js-reveal .reveal.is-visible {
+  animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  html.js-reveal .reveal,
+  html.js-reveal .reveal:not(.is-visible) {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Marquee for the logo strip */
+@keyframes drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: drift 42s linear infinite;
+}
+
+.marquee:hover .marquee-track { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+}
+
+/* Focus ring, applied consistently */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Scrollbar, desktop only */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar { width: 11px; height: 11px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--ink) 16%, transparent);
+    border-radius: 999px;
+    border: 3px solid var(--ground);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--ink) 28%, transparent);
+  }
+}
