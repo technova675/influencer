@@ -17,6 +17,14 @@
   --accent-soft: #e8ecff;
   --accent-ink: #ffffff;
 
+  /* One colour per side of the marketplace. The pairing is the whole point:
+     a reader should be able to tell an influencer card from a UGC card from
+     across the room, before reading a single word of it. */
+  --influencer: #1e40ff;
+  --influencer-soft: #e8ecff;
+  --ugc: #b8531c;
+  --ugc-soft: #fdeee2;
+
   /* Section grounds, in scroll order */
   --ground-1: #eef1fb;
   --ground-2: #f7f7f5;
@@ -41,6 +49,10 @@
   --color-line: var(--line);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-influencer: var(--influencer);
+  --color-influencer-soft: var(--influencer-soft);
+  --color-ugc: var(--ugc);
+  --color-ugc-soft: var(--ugc-soft);
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
@@ -364,4 +376,183 @@ html.js-reveal .reveal.is-visible {
   ::-webkit-scrollbar-thumb:hover {
     background: color-mix(in srgb, var(--ink) 28%, transparent);
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Talent type. The one distinction the whole site turns on, so it gets its own
+   badge treatment rather than reusing the generic pill.
+   --------------------------------------------------------------------------- */
+
+.badge-talent {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.badge-talent--influencer {
+  background: var(--influencer-soft);
+  color: var(--influencer);
+  border-color: color-mix(in srgb, var(--influencer) 18%, transparent);
+}
+
+.badge-talent--ugc_creator {
+  background: var(--ugc-soft);
+  color: var(--ugc);
+  border-color: color-mix(in srgb, var(--ugc) 20%, transparent);
+}
+
+/* "Both" reads as neither colour rather than a muddy blend of the two. */
+.badge-talent--both {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   Segmented control. Used for the roster's Influencers / UGC switch and for
+   the form's talent-type question, so the same choice looks the same in both
+   places.
+   --------------------------------------------------------------------------- */
+
+.segmented {
+  display: inline-flex;
+  padding: 0.25rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  border: 1px solid var(--line);
+}
+
+.segmented > * {
+  border-radius: 999px;
+  padding: 0.4375rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  transition: background-color 0.18s ease, color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.segmented > *:hover { color: var(--ink); }
+
+.segmented > [data-active="true"] {
+  background: var(--ground-raised);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------------------------------------------------------------------------
+   The two-door choice. A card big enough to be a decision, not a link.
+   --------------------------------------------------------------------------- */
+
+.door {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--ground-raised);
+  border: 1px solid var(--line);
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+@media (min-width: 640px) {
+  .door { padding: 2.5rem; }
+}
+
+.door::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--door-accent, var(--ink));
+}
+
+.door:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: color-mix(in srgb, var(--door-accent, var(--ink)) 35%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .door:hover { transform: none; }
+}
+
+/* Large-format serif choice card used inside the join form */
+.choice {
+  display: block;
+  position: relative;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--line);
+  background: var(--ground-raised);
+  padding: 1.25rem 1.25rem 1.25rem 3.25rem;
+  cursor: pointer;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.choice:hover { border-color: color-mix(in srgb, var(--ink) 25%, transparent); }
+
+.choice::before {
+  content: "";
+  position: absolute;
+  left: 1.25rem;
+  top: 1.5rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 999px;
+  border: 1.5px solid color-mix(in srgb, var(--ink) 30%, transparent);
+  background: var(--ground-raised);
+  transition: all 0.18s ease;
+}
+
+.choice:has(input:checked) {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 4%, var(--ground-raised));
+}
+
+.choice:has(input:checked)::before {
+  border-color: var(--accent);
+  border-width: 5px;
+}
+
+.choice:has(input:focus-visible) {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.choice input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Progress rail for the stepped join form
+   --------------------------------------------------------------------------- */
+
+.rail {
+  height: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  overflow: hidden;
+}
+
+.rail > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }

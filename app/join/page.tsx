@@ -5,7 +5,7 @@ import { CreatorForm } from "./creator-form";
 export const metadata: Metadata = {
   title: "Join the roster",
   description:
-    "Add yourself to the roster. Brands filter by genre, tier, city and budget — a complete profile puts you in more shortlists.",
+    "Add yourself to the roster in five short steps. Free, you set your own rates, and your contact details stay private.",
 };
 
 export default function JoinPage() {
@@ -23,9 +23,9 @@ export default function JoinPage() {
               to the roster.
             </h1>
             <p className="measure mx-auto mt-5 leading-relaxed text-ink-soft">
-              Four short sections. Brands filter this roster by genre, tier,
-              city, language and budget — the more of it you fill in, the more
-              briefs you turn up in.
+              Five short steps, and only three fields are compulsory. It is
+              free, you set your own rates, and your phone and email are never
+              shown publicly.
             </p>
           </header>
 

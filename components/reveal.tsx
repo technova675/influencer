@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 /**
@@ -13,12 +14,27 @@ import { useEffect } from "react";
  *
  * The hidden state is only ever applied after this mounts (via `js-reveal` on
  * <html>), so if the bundle fails to load the copy is simply visible.
+ *
+ * Keyed on the pathname. This component lives in the root layout, so it mounts
+ * exactly once and would otherwise only ever observe the elements that existed
+ * on the first page. After a client-side navigation the new page's `.reveal`
+ * elements would be unobserved - and `html.js-reveal .reveal:not(.is-visible)`
+ * pins those at opacity 0, so the whole page renders blank until a hard reload
+ * remounts this. Re-running on every navigation is what keeps the new page
+ * visible.
  */
 export function Reveal() {
+  const pathname = usePathname();
+
   useEffect(() => {
     const root = document.documentElement;
     const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal"));
-    if (els.length === 0) return;
+    if (els.length === 0) {
+      // Nothing to animate on this route - make sure a previous route has not
+      // left the hiding rule switched on.
+      root.classList.remove("js-reveal");
+      return;
+    }
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced || !("IntersectionObserver" in window)) return;
@@ -52,7 +68,7 @@ export function Reveal() {
       observer.disconnect();
       root.classList.remove("js-reveal");
     };
-  }, []);
+  }, [pathname]);
 
   return null;
 }

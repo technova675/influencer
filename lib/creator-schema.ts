@@ -1,5 +1,12 @@
 import { z } from "zod";
-import { AGE_BANDS, CONTENT_FORMATS, GENRES, LANGUAGES } from "./taxonomy";
+import {
+  AGE_BANDS,
+  CONTENT_FORMATS,
+  GENRES,
+  LANGUAGES,
+  TALENT_TYPE_IDS,
+  sellsReach,
+} from "./taxonomy";
 
 /** "" -> undefined, so empty form fields become NULL rather than "". */
 const blankToUndefined = (v: unknown) =>
@@ -77,6 +84,12 @@ export const creatorSubmissionSchema = z
     country: z.string().trim().default("India"),
     languages: z.array(z.enum(LANGUAGES)).max(13).default([]),
 
+    /* The first question on the form: it decides which of the fields below
+       are even asked for, and how the roster card renders. */
+    talent_type: z.enum(TALENT_TYPE_IDS, {
+      message: "Pick how you work with brands",
+    }),
+
     primary_genre: z.enum(GENRES, { message: "Pick your main genre" }),
     secondary_genres: z.array(z.enum(GENRES)).max(5).default([]),
     content_formats: z.array(z.enum(CONTENT_FORMATS)).max(8).default([]),
@@ -107,6 +120,11 @@ export const creatorSubmissionSchema = z
     rate_static_post: count,
     rate_youtube_integration: count,
     rate_ugc_video: count,
+    ugc_turnaround_days: z.preprocess((v) => {
+      if (v === "" || v === null || v === undefined) return undefined;
+      const n = Number(v);
+      return Number.isNaN(n) ? v : n;
+    }, z.number().int().min(1).max(60).optional()),
     barter_open: z.coerce.boolean().default(false),
 
     past_brands: csvList,
@@ -124,26 +142,39 @@ export const creatorSubmissionSchema = z
     /** Honeypot. Bots fill it, humans never see it. */
     website: z.string().max(0, "Rejected").optional(),
   })
+  /* We have to be able to find the work. For an influencer that means a
+     handle; a UGC creator may have no audience at all, so a portfolio link or
+     an uploaded sample counts just as well. */
   .refine(
-    (d) =>
-      Boolean(
+    (d) => {
+      const hasHandle = Boolean(
         d.instagram_handle ||
           d.youtube_handle ||
           d.tiktok_handle ||
           d.x_handle,
-      ),
+      );
+      if (hasHandle) return true;
+      if (sellsReach(d.talent_type)) return false;
+      return Boolean(
+        d.portfolio_url || (d.showcase_media_paths ?? []).length > 0,
+      );
+    },
     {
-      message: "Add at least one social handle so we can find your work",
+      message: "Add a handle, a portfolio link or a sample so we can see your work",
       path: ["instagram_handle"],
     },
   )
+  /* Follower counts are only meaningful for someone selling reach. Asking a
+     UGC creator for one - and rejecting them without it - is the exact
+     confusion this field exists to remove. */
   .refine(
     (d) =>
+      !sellsReach(d.talent_type) ||
       (d.instagram_followers ?? 0) +
         (d.youtube_subscribers ?? 0) +
         (d.tiktok_followers ?? 0) +
         (d.x_followers ?? 0) >
-      0,
+        0,
     {
       message: "Enter your follower count on at least one platform",
       path: ["instagram_followers"],

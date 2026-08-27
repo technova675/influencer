@@ -24,6 +24,67 @@ export const GENRES = [
   "Celebrity",
 ] as const;
 
+/**
+ * What a person on the roster actually sells. This is the one distinction the
+ * whole site turns on:
+ *
+ *   influencer  - sells access to their audience. Priced per placement on
+ *                 their own channel. Reach and engagement are the product.
+ *   ugc_creator - sells the footage. The brand runs it as an ad on the brand's
+ *                 own channels. An audience is not required, which is why a
+ *                 follower tier is never shown for one.
+ *   both        - does either, priced separately.
+ */
+export const TALENT_TYPES = [
+  {
+    id: "influencer",
+    label: "Influencer",
+    short: "Posts on my channel",
+    blurb:
+      "Brands pay you to post to your own audience. Your reach, engagement and rate card are what they shortlist on.",
+  },
+  {
+    id: "ugc_creator",
+    label: "UGC creator",
+    short: "I shoot, the brand posts",
+    blurb:
+      "You film the content and hand it over — the brand runs it as an ad. No audience needed. Your craft, formats and turnaround are what they shortlist on.",
+  },
+  {
+    id: "both",
+    label: "Both",
+    short: "I do both",
+    blurb:
+      "You post to your own audience and take content-only briefs. You'll show up in both sets of results, with separate rates for each.",
+  },
+] as const;
+
+export type TalentType = (typeof TALENT_TYPES)[number]["id"];
+
+export const TALENT_TYPE_IDS = TALENT_TYPES.map((t) => t.id) as [
+  TalentType,
+  ...TalentType[],
+];
+
+export function talentType(id: string | null | undefined) {
+  return TALENT_TYPES.find((t) => t.id === id) ?? TALENT_TYPES[0];
+}
+
+/**
+ * Whether follower count, engagement and tier mean anything for this person.
+ * A pure UGC creator may have no audience at all, and `creator_tier()` buckets
+ * a null follower count into "Nano" - so showing either would be actively
+ * misleading rather than merely empty.
+ */
+export function sellsReach(type: TalentType | null | undefined) {
+  return type !== "ugc_creator";
+}
+
+/** Whether they take content-only briefs - drives the UGC side of a card. */
+export function sellsContent(type: TalentType | null | undefined) {
+  return type === "ugc_creator" || type === "both";
+}
+
 export const CONTENT_FORMATS = [
   "Instagram Reels",
   "Instagram Stories",

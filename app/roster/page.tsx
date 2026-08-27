@@ -5,12 +5,13 @@ import { SiteFooter, SiteNav } from "@/components/site-nav";
 import { CreatorCard } from "@/components/creator-card";
 import { RosterFilters } from "@/components/roster-filters";
 import { fetchCreators, type RosterFilters as Filters } from "@/lib/queries";
-import type { Tier } from "@/lib/taxonomy";
+import type { TalentType, Tier } from "@/lib/taxonomy";
+import { TALENT_TYPE_IDS } from "@/lib/taxonomy";
 
 export const metadata: Metadata = {
   title: "The roster",
   description:
-    "Filter Indian creators by genre, follower tier, city, language and budget.",
+    "Filter creators by genre, follower tier, city, language and budget.",
 };
 
 function parseFilters(sp: Record<string, string | string[] | undefined>): Filters {
@@ -22,8 +23,13 @@ function parseFilters(sp: Record<string, string | string[] | undefined>): Filter
   const page = Number(one("page"));
   const sort = one("sort");
 
+  const talent = one("talent");
+
   return {
     q: one("q"),
+    talent: (TALENT_TYPE_IDS as readonly string[]).includes(talent ?? "")
+      ? (talent as TalentType)
+      : undefined,
     genre: one("genre"),
     tier: one("tier") as Tier | undefined,
     city: one("city"),
@@ -75,7 +81,17 @@ async function Results({ filters }: { filters: Filters }) {
     <>
       <p className="mt-7 text-sm text-ink-faint">
         <span className="tabular font-medium text-ink">{total}</span>{" "}
-        {total === 1 ? "creator" : "creators"}
+        {filters.talent === "ugc_creator"
+          ? total === 1
+            ? "UGC creator"
+            : "UGC creators"
+          : filters.talent === "influencer"
+            ? total === 1
+              ? "influencer"
+              : "influencers"
+            : total === 1
+              ? "creator"
+              : "creators"}
       </p>
 
       <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -159,8 +175,12 @@ export default async function RosterPage(props: PageProps<"/roster">) {
               The roster
             </h1>
             <p className="measure mt-5 leading-relaxed text-ink-soft">
-              Every creator here is reviewed and approved. Filter the way a
-              brief reads — genre, tier, city, language, budget.
+              Every profile here is reviewed and approved. Two kinds of talent,
+              kept apart on purpose:{" "}
+              <strong className="font-medium text-ink">influencers</strong> post
+              to their own audience, and{" "}
+              <strong className="font-medium text-ink">UGC creators</strong>{" "}
+              shoot content you run as your own ad. Switch between them below.
             </p>
           </header>
 

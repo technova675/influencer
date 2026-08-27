@@ -1,6 +1,12 @@
 import "server-only";
 import { adminClient } from "./supabase";
-import { GENRES, TIERS, type Status, type Tier } from "./taxonomy";
+import {
+  GENRES,
+  TIERS,
+  type Status,
+  type TalentType,
+  type Tier,
+} from "./taxonomy";
 
 export type CreatorRow = {
   id: string;
@@ -13,6 +19,7 @@ export type CreatorRow = {
   city: string | null;
   state: string | null;
   languages: string[];
+  talent_type: TalentType;
   primary_genre: string;
   secondary_genres: string[];
   content_formats: string[];
@@ -34,6 +41,7 @@ export type CreatorRow = {
   rate_static_post: number | null;
   rate_youtube_integration: number | null;
   rate_ugc_video: number | null;
+  ugc_turnaround_days: number | null;
   barter_open: boolean;
   past_brands: string[];
   status: Status;
@@ -42,6 +50,8 @@ export type CreatorRow = {
 
 export type RosterFilters = {
   q?: string;
+  /** "influencer" and "ugc_creator" both include people who do `both`. */
+  talent?: TalentType;
   genre?: string;
   tier?: Tier;
   city?: string;
@@ -55,11 +65,12 @@ export type RosterFilters = {
 
 /** Public roster: approved + featured only, and never contact details. */
 const PUBLIC_COLUMNS =
-  "id,created_at,full_name,display_name,bio,city,state,languages,primary_genre," +
+  "id,created_at,full_name,display_name,bio,city,state,languages,talent_type,primary_genre," +
   "secondary_genres,content_formats,instagram_handle,youtube_handle,tiktok_handle," +
   "x_handle,portfolio_url,profile_photo_path,showcase_media_paths,avg_reel_views,effective_followers," +
   "effective_engagement_rate,is_verified,audience_female_pct,audience_age_band," +
   "rate_reel,rate_story,rate_static_post,rate_youtube_integration,rate_ugc_video," +
+  "ugc_turnaround_days," +
   "barter_open,past_brands,status";
 
 export async function fetchCreators(
@@ -84,6 +95,16 @@ export async function fetchCreators(
     }
   } else {
     query = query.in("status", ["approved", "featured"]);
+  }
+
+  // Somebody who does `both` belongs in either set of results, so this is an
+  // `in` rather than an `eq`.
+  if (filters.talent === "influencer") {
+    query = query.in("talent_type", ["influencer", "both"]);
+  } else if (filters.talent === "ugc_creator") {
+    query = query.in("talent_type", ["ugc_creator", "both"]);
+  } else if (filters.talent === "both") {
+    query = query.eq("talent_type", "both");
   }
 
   // `genre` is interpolated into a PostgREST or() expression, which is a query
@@ -162,17 +183,28 @@ export async function fetchCreators(
 
 export async function fetchStats() {
   const db = adminClient();
-  const [total, approved, pending, cities] = await Promise.all([
+  const live = ["approved", "featured"];
+  const [total, approved, pending, cities, influencers, ugc] = await Promise.all([
     db.from("creators").select("id", { count: "exact", head: true }),
     db
       .from("creators")
       .select("id", { count: "exact", head: true })
-      .in("status", ["approved", "featured"]),
+      .in("status", live),
     db
       .from("creators")
       .select("id", { count: "exact", head: true })
       .eq("status", "pending"),
     db.from("creators").select("city").not("city", "is", null).limit(1000),
+    db
+      .from("creators")
+      .select("id", { count: "exact", head: true })
+      .in("status", live)
+      .in("talent_type", ["influencer", "both"]),
+    db
+      .from("creators")
+      .select("id", { count: "exact", head: true })
+      .in("status", live)
+      .in("talent_type", ["ugc_creator", "both"]),
   ]);
 
   const uniqueCities = new Set(
@@ -184,6 +216,8 @@ export async function fetchStats() {
     approved: approved.count ?? 0,
     pending: pending.count ?? 0,
     cities: uniqueCities.size,
+    influencers: influencers.count ?? 0,
+    ugc: ugc.count ?? 0,
   };
 }
 

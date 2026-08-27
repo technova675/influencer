@@ -18,6 +18,17 @@ do $$ begin
   create type follower_tier as enum ('nano', 'micro', 'mid', 'macro', 'mega');
 exception when duplicate_object then null; end $$;
 
+-- What the creator actually sells.
+--   influencer  - sells access to their audience; priced per placement on
+--                 their own channel. Reach and engagement are the product.
+--   ugc_creator - sells the footage; the brand runs it as an ad on the brand's
+--                 own channels. No audience required. Craft and turnaround are
+--                 the product.
+--   both        - does either, priced separately.
+do $$ begin
+  create type talent_type as enum ('influencer', 'ugc_creator', 'both');
+exception when duplicate_object then null; end $$;
+
 -- ---------------------------------------------------------------------------
 -- creators
 --
@@ -176,10 +187,45 @@ alter table public.creators
   add column if not exists showcase_media_paths text[] not null default '{}';
 
 -- ---------------------------------------------------------------------------
+-- talent_type (added after the initial release)
+--
+-- Defaulting to 'influencer' is the backfill for every pre-existing row: the
+-- roster was audience-led only until this column existed, so that is what those
+-- rows are. The one signal already in the data is the content_formats array -
+-- anyone who ticked "UGC / Ad Creative" was telling us they also shoot for the
+-- brand's own channels, so they are promoted to 'both'.
+-- ---------------------------------------------------------------------------
+-- The backfill sits inside the branch that creates the column so it runs
+-- exactly once. Re-running this file must not undo a talent manager who has
+-- since corrected somebody's type by hand.
+do $$ begin
+  if not exists (
+    select 1 from information_schema.columns
+     where table_schema = 'public'
+       and table_name   = 'creators'
+       and column_name  = 'talent_type'
+  ) then
+    alter table public.creators
+      add column talent_type talent_type not null default 'influencer';
+
+    update public.creators
+       set talent_type = 'both'
+     where content_formats @> array['UGC / Ad Creative'];
+  end if;
+end $$;
+
+-- Turnaround, in days, for a UGC brief. Meaningless for a pure influencer, so
+-- it is nullable rather than defaulted.
+alter table public.creators
+  add column if not exists ugc_turnaround_days smallint
+  check (ugc_turnaround_days is null or ugc_turnaround_days between 1 and 60);
+
+-- ---------------------------------------------------------------------------
 -- Filter indexes
 -- ---------------------------------------------------------------------------
 create index if not exists creators_status_idx     on public.creators (status);
 create index if not exists creators_genre_idx      on public.creators (primary_genre);
+create index if not exists creators_talent_idx     on public.creators (talent_type);
 create index if not exists creators_city_idx       on public.creators (city);
 create index if not exists creators_followers_idx  on public.creators (effective_followers desc);
 create index if not exists creators_created_idx    on public.creators (created_at desc);
@@ -204,6 +250,7 @@ begin
     coalesce(new.tiktok_handle, '')    || ' ' ||
     coalesce(new.x_handle, '')         || ' ' ||
     coalesce(new.primary_genre, '')    || ' ' ||
+    coalesce(new.talent_type::text, '') || ' ' ||
     coalesce(new.city, '')             || ' ' ||
     coalesce(new.state, '')            || ' ' ||
     coalesce(array_to_string(new.secondary_genres, ' '), '') || ' ' ||
