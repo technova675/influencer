@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isAuthed } from "@/lib/auth";
 import { fetchCreators } from "@/lib/queries";
-import type { Status, Tier } from "@/lib/taxonomy";
+import type { Status, TalentType, Tier } from "@/lib/taxonomy";
 
 const COLUMNS = [
   "full_name",
@@ -10,6 +10,7 @@ const COLUMNS = [
   "phone",
   "city",
   "state",
+  "talent_type",
   "primary_genre",
   "secondary_genres",
   "languages",
@@ -25,6 +26,7 @@ const COLUMNS = [
   "rate_static_post",
   "rate_youtube_integration",
   "rate_ugc_video",
+  "ugc_turnaround_days",
   "barter_open",
   "past_brands",
   "status",
@@ -52,6 +54,7 @@ export async function GET(request: NextRequest) {
       genre: sp.get("genre") ?? undefined,
       city: sp.get("city") ?? undefined,
       language: sp.get("language") ?? undefined,
+      talent: (sp.get("talent") as TalentType) ?? undefined,
       tier: (sp.get("tier") as Tier) ?? undefined,
       status: (sp.get("status") as Status) ?? "all",
       sort: "recent",

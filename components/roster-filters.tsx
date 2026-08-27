@@ -4,6 +4,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { CITIES, GENRES, LANGUAGES, TIERS } from "@/lib/taxonomy";
 
+const TALENT_TABS = [
+  { value: "", label: "Everyone" },
+  { value: "influencer", label: "Influencers" },
+  { value: "ugc_creator", label: "UGC creators" },
+] as const;
+
 export function RosterFilters({ basePath = "/roster" }: { basePath?: string }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -25,6 +31,13 @@ export function RosterFilters({ basePath = "/roster" }: { basePath?: string }) {
       const next = new URLSearchParams(params.toString());
       if (value) next.set(key, value);
       else next.delete(key);
+      // Switching to UGC hides the reach filters, so it has to drop them too -
+      // otherwise a tier left over from the influencer view keeps filtering
+      // invisibly and the roster looks empty for no stated reason.
+      if (key === "talent" && value === "ugc_creator") {
+        next.delete("tier");
+        next.delete("maxReelRate");
+      }
       push(next);
     },
     [params, push],
@@ -38,9 +51,22 @@ export function RosterFilters({ basePath = "/roster" }: { basePath?: string }) {
     return () => clearTimeout(t);
   }, [q, params, set]);
 
-  const active = ["genre", "tier", "city", "language", "maxReelRate", "q"].filter(
-    (k) => params.get(k),
-  ).length;
+  const active = [
+    "talent",
+    "genre",
+    "tier",
+    "city",
+    "language",
+    "maxReelRate",
+    "q",
+  ].filter((k) => params.get(k)).length;
+
+  const talent = params.get("talent") ?? "";
+
+  // Follower tier and a reel budget are properties of selling reach. With the
+  // roster switched to UGC only they would filter every result to nothing, so
+  // they come off the bar entirely rather than sitting there returning zero.
+  const showReachFilters = talent !== "ugc_creator";
 
   const selectCls =
     "field !py-2 !text-sm !w-auto min-w-0 cursor-pointer appearance-none pr-8 " +
@@ -52,7 +78,23 @@ export function RosterFilters({ basePath = "/roster" }: { basePath?: string }) {
       className="sticky top-[57px] z-40 -mx-5 border-b border-line/70 bg-[color-mix(in_srgb,var(--ground-2)_92%,transparent)] px-5 py-3.5 backdrop-blur-md sm:-mx-8 sm:px-8"
       data-pending={pending || undefined}
     >
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2.5">
+      <div className="mx-auto max-w-6xl">
+        <div className="segmented" role="group" aria-label="Filter by what they sell">
+          {TALENT_TABS.map((t) => (
+            <button
+              key={t.value}
+              type="button"
+              data-active={talent === t.value || undefined}
+              aria-pressed={talent === t.value}
+              onClick={() => set("talent", t.value)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mx-auto mt-3 flex max-w-6xl flex-wrap items-center gap-2.5">
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -73,22 +115,24 @@ export function RosterFilters({ basePath = "/roster" }: { basePath?: string }) {
           ))}
         </select>
 
-        <select
-          value={params.get("tier") ?? ""}
-          onChange={(e) => set("tier", e.target.value)}
-          aria-label="Filter by follower tier"
-          className={selectCls}
-        >
-          <option value="">All tiers</option>
-          {TIERS.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.label}
-              {t.max
-                ? ` (${(t.min / 1000).toFixed(0)}K–${((t.max + 1) / 1000).toFixed(0)}K)`
-                : " (1M+)"}
-            </option>
-          ))}
-        </select>
+        {showReachFilters && (
+          <select
+            value={params.get("tier") ?? ""}
+            onChange={(e) => set("tier", e.target.value)}
+            aria-label="Filter by follower tier"
+            className={selectCls}
+          >
+            <option value="">All tiers</option>
+            {TIERS.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+                {t.max
+                  ? ` (${(t.min / 1000).toFixed(0)}K–${((t.max + 1) / 1000).toFixed(0)}K)`
+                  : " (1M+)"}
+              </option>
+            ))}
+          </select>
+        )}
 
         <select
           value={params.get("city") ?? ""}
@@ -114,18 +158,20 @@ export function RosterFilters({ basePath = "/roster" }: { basePath?: string }) {
           ))}
         </select>
 
-        <select
-          value={params.get("maxReelRate") ?? ""}
-          onChange={(e) => set("maxReelRate", e.target.value)}
-          aria-label="Filter by maximum reel rate"
-          className={selectCls}
-        >
-          <option value="">Any budget</option>
-          <option value="10000">Reel under ₹10K</option>
-          <option value="25000">Reel under ₹25K</option>
-          <option value="50000">Reel under ₹50K</option>
-          <option value="100000">Reel under ₹1L</option>
-        </select>
+        {showReachFilters && (
+          <select
+            value={params.get("maxReelRate") ?? ""}
+            onChange={(e) => set("maxReelRate", e.target.value)}
+            aria-label="Filter by maximum reel rate"
+            className={selectCls}
+          >
+            <option value="">Any budget</option>
+            <option value="10000">Reel under ₹10K</option>
+            <option value="25000">Reel under ₹25K</option>
+            <option value="50000">Reel under ₹50K</option>
+            <option value="100000">Reel under ₹1L</option>
+          </select>
+        )}
 
         <select
           value={params.get("sort") ?? ""}

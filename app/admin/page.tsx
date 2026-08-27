@@ -3,12 +3,19 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { isAuthed } from "@/lib/auth";
 import { fetchCreators, fetchStats, type CreatorRow } from "@/lib/queries";
-import { compactNumber, formatRupees, STATUSES, tierLabel } from "@/lib/taxonomy";
+import {
+  compactNumber,
+  formatRupees,
+  sellsReach,
+  STATUSES,
+  talentType,
+  tierLabel,
+} from "@/lib/taxonomy";
 import { publicMediaUrl } from "@/lib/media";
 import { LoginForm } from "./login-form";
 import { RosterFilters } from "@/components/roster-filters";
 import { logout, markVerified, saveNote, setStatus } from "./actions";
-import type { Status } from "@/lib/taxonomy";
+import type { Status, TalentType } from "@/lib/taxonomy";
 
 export const metadata: Metadata = {
   title: "Roster admin",
@@ -60,14 +67,29 @@ function AdminRow({ creator }: { creator: CreatorRow }) {
           </div>
         </div>
 
-        <div className="hidden text-right sm:block">
-          <div className="tabular text-sm font-medium">
-            {compactNumber(creator.effective_followers)}
+        <span
+          className={`badge-talent badge-talent--${creator.talent_type} hidden shrink-0 sm:inline-flex`}
+        >
+          {talentType(creator.talent_type).label}
+        </span>
+
+        {sellsReach(creator.talent_type) ? (
+          <div className="hidden text-right sm:block">
+            <div className="tabular text-sm font-medium">
+              {compactNumber(creator.effective_followers)}
+            </div>
+            <div className="text-xs text-ink-faint">
+              {tierLabel(creator.effective_followers)}
+            </div>
           </div>
-          <div className="text-xs text-ink-faint">
-            {tierLabel(creator.effective_followers)}
+        ) : (
+          <div className="hidden text-right sm:block">
+            <div className="tabular text-sm font-medium">
+              {formatRupees(creator.rate_ugc_video) ?? "—"}
+            </div>
+            <div className="text-xs text-ink-faint">per video</div>
           </div>
-        </div>
+        )}
 
         <span
           className={`pill shrink-0 !text-xs ${STATUS_STYLES[creator.status]}`}
@@ -106,11 +128,24 @@ function AdminRow({ creator }: { creator: CreatorRow }) {
             )}
 
             <div>
-              <div className="overline">Reach</div>
+              <div className="overline">
+                {sellsReach(creator.talent_type) ? "Reach" : "Delivery"}
+              </div>
               <p className="tabular mt-1.5 text-ink-soft">
-                {compactNumber(creator.effective_followers)} followers ·{" "}
-                {creator.effective_engagement_rate ?? "—"}% engagement ·{" "}
-                {compactNumber(creator.avg_reel_views)} avg views
+                {sellsReach(creator.talent_type) ? (
+                  <>
+                    {compactNumber(creator.effective_followers)} followers ·{" "}
+                    {creator.effective_engagement_rate ?? "—"}% engagement ·{" "}
+                    {compactNumber(creator.avg_reel_views)} avg views
+                  </>
+                ) : (
+                  <>
+                    {creator.ugc_turnaround_days
+                      ? `${creator.ugc_turnaround_days}-day turnaround`
+                      : "turnaround not given"}{" "}
+                    · {creator.showcase_media_paths.length} samples
+                  </>
+                )}
                 {creator.is_verified && (
                   <span className="pill pill-accent ml-2 !text-xs">verified</span>
                 )}
@@ -224,6 +259,7 @@ async function AdminList({
       genre: one("genre"),
       city: one("city"),
       language: one("language"),
+      talent: one("talent") as TalentType | undefined,
       tier: one("tier") as never,
       status: (status as Status) ?? "all",
       sort: "recent",
