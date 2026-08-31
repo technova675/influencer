@@ -15,13 +15,18 @@ export async function login(
   const password = String(formData.get("password") ?? "");
   if (!password) return { error: "Enter the agency password." };
 
+  // Where to land after signing in. Only a path on this site is accepted, so a
+  // crafted `next` cannot turn the login form into an open redirect.
+  const requested = String(formData.get("next") ?? "");
+  const next = /^\/[^/\\]/.test(requested) ? requested : "/admin";
+
   // Blunt throttle against brute force on a single shared password.
   await new Promise((r) => setTimeout(r, 400));
 
   if (!checkPassword(password)) return { error: "That password is not right." };
 
   await startSession();
-  redirect("/admin");
+  redirect(next);
 }
 
 export async function logout() {

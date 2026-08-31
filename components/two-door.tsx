@@ -1,85 +1,19 @@
-import Link from "next/link";
-
 /**
- * The two-door choice. Every visitor is on one of two sides of this
- * marketplace, and until they say which, nothing else on the page can be
- * written for them. So this is the first thing under the hero.
- */
-export function TwoDoor() {
-  return (
-    <div className="grid gap-5 md:grid-cols-2">
-      <Link
-        href="/for-creators"
-        className="door reveal"
-        style={{ "--door-accent": "var(--influencer)" } as React.CSSProperties}
-      >
-        <p className="overline">I make the content</p>
-        <h3 className="display-sm mt-3 text-[clamp(1.5rem,3vw,2rem)]">
-          Creators &amp; influencers
-        </h3>
-        <p className="measure mt-3 text-sm leading-relaxed text-ink-soft sm:text-base">
-          List yourself free, set your own rates, and get found by brands
-          filtering for exactly what you make. Five short questions.
-        </p>
-        <span className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-accent">
-          Add yourself to the roster
-          <Arrow />
-        </span>
-      </Link>
-
-      <Link
-        href="/for-brands"
-        className="door reveal"
-        style={{ "--door-accent": "var(--ugc)" } as React.CSSProperties}
-      >
-        <p className="overline">I&rsquo;m hiring</p>
-        <h3 className="display-sm mt-3 text-[clamp(1.5rem,3vw,2rem)]">
-          Brands &amp; agencies
-        </h3>
-        <p className="measure mt-3 text-sm leading-relaxed text-ink-soft sm:text-base">
-          Filter a reviewed roster by genre, tier, city, language and budget —
-          with rates already on every card. Shortlist the same day.
-        </p>
-        <span className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-[var(--ugc)]">
-          Browse the roster
-          <Arrow />
-        </span>
-      </Link>
-    </div>
-  );
-}
-
-function Arrow() {
-  return (
-    <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden>
-      <path
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M2 8h11m-4.5-4.5L13 8l-4.5 4.5"
-      />
-    </svg>
-  );
-}
-
-/**
- * Influencer vs UGC creator, side by side. This is the distinction the roster,
- * the cards and the join form all turn on, so it gets stated once, plainly,
- * rather than being left for a visitor to infer from the listings.
+ * Influencer vs creator vs model, side by side. This is the distinction
+ * the roster, the cards and the join form all turn on, so it gets stated once,
+ * plainly, rather than being left for a visitor to infer from the listings -
+ * which they now cannot do anyway, because the roster is private.
  */
 export function TalentExplainer({
   counts,
 }: {
-  counts?: { influencers: number; ugc: number };
+  counts?: { influencers: number; creators: number; models: number };
 }) {
   const columns = [
     {
       key: "influencer" as const,
       label: "Influencer",
       line: "Sells access to their audience",
-      href: "/roster?talent=influencer",
       count: counts?.influencers,
       rows: [
         ["Who posts it", "They do, on their own channel"],
@@ -89,11 +23,10 @@ export function TalentExplainer({
       ],
     },
     {
-      key: "ugc_creator" as const,
-      label: "UGC creator",
+      key: "creator" as const,
+      label: "Creator",
       line: "Sells the footage, not an audience",
-      href: "/roster?talent=ugc_creator",
-      count: counts?.ugc,
+      count: counts?.creators,
       rows: [
         ["Who posts it", "You do, as your own ad"],
         ["What you're buying", "The content itself, with usage rights"],
@@ -101,10 +34,22 @@ export function TalentExplainer({
         ["Shortlist on", "Craft, formats, samples, speed"],
       ],
     },
+    {
+      key: "model" as const,
+      label: "Model",
+      line: "Sells the day, not the post",
+      count: counts?.models,
+      rows: [
+        ["Who posts it", "You do — they're in the shoot, not the caption"],
+        ["What you're buying", "Their time on set, plus the buyout"],
+        ["Priced by", "Half day, full day, usage"],
+        ["Shortlist on", "Digitals, measurements, casting, availability"],
+      ],
+    },
   ];
 
   return (
-    <div className="grid gap-5 md:grid-cols-2">
+    <div className="grid gap-5 md:grid-cols-3">
       {columns.map((c) => (
         <div key={c.key} className="card reveal flex flex-col p-6 sm:p-8">
           <div className="flex items-center justify-between gap-3">
@@ -128,13 +73,6 @@ export function TalentExplainer({
               </div>
             ))}
           </dl>
-
-          <Link
-            href={c.href}
-            className="btn btn-ghost mt-7 self-start !py-2 !text-sm"
-          >
-            See {c.label.toLowerCase()}s
-          </Link>
         </div>
       ))}
     </div>

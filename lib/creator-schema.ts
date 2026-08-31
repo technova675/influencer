@@ -2,9 +2,12 @@ import { z } from "zod";
 import {
   AGE_BANDS,
   CONTENT_FORMATS,
+  EXPERIENCE_LEVEL_IDS,
   GENRES,
   LANGUAGES,
+  MODEL_CATEGORIES,
   TALENT_TYPE_IDS,
+  isModel,
   sellsReach,
 } from "./taxonomy";
 
@@ -42,6 +45,17 @@ const count = z.preprocess((v) => {
   }
   return v;
 }, z.number().int().min(0).max(1_000_000_000).optional());
+
+/** A measurement in whole centimetres, within a plausible human range. */
+const measurement = (min: number, max: number) =>
+  z.preprocess((v) => {
+    if (v === "" || v === null || v === undefined) return undefined;
+    if (typeof v === "string") {
+      const n = Number(v.replace(/[^\d.]/g, ""));
+      return Number.isNaN(n) ? v : Math.round(n);
+    }
+    return v;
+  }, z.number().int().min(min).max(max).optional());
 
 const percent = z.preprocess((v) => {
   if (v === "" || v === null || v === undefined) return undefined;
@@ -119,8 +133,8 @@ export const creatorSubmissionSchema = z
     rate_story: count,
     rate_static_post: count,
     rate_youtube_integration: count,
-    rate_ugc_video: count,
-    ugc_turnaround_days: z.preprocess((v) => {
+    rate_video: count,
+    turnaround_days: z.preprocess((v) => {
       if (v === "" || v === null || v === undefined) return undefined;
       const n = Number(v);
       return Number.isNaN(n) ? v : n;
@@ -139,11 +153,40 @@ export const creatorSubmissionSchema = z
       )
       .default([]),
 
+    /* ----- model only -----------------------------------------------------
+       Written to `model_profiles`, not to `creators`. Every one of these is
+       optional at the field level; the two a model actually has to give are
+       enforced by the refine below, so a creator or an influencer is never
+       asked for a measurement. */
+    height_cm: measurement(120, 220),
+    bust_cm: measurement(40, 200),
+    waist_cm: measurement(40, 200),
+    hips_cm: measurement(40, 200),
+    dress_size: z.preprocess(blankToUndefined, z.string().trim().max(20).optional()),
+    shoe_size: z.preprocess(blankToUndefined, z.string().trim().max(20).optional()),
+    hair_colour: z.preprocess(blankToUndefined, z.string().trim().max(40).optional()),
+    eye_colour: z.preprocess(blankToUndefined, z.string().trim().max(40).optional()),
+    visible_tattoos: z.coerce.boolean().default(false),
+    model_categories: z.array(z.enum(MODEL_CATEGORIES)).max(12).default([]),
+    experience_level: z.preprocess(
+      blankToUndefined,
+      z.enum(EXPERIENCE_LEVEL_IDS).optional(),
+    ),
+    agency_signed: z.coerce.boolean().default(false),
+    agency_name: z.preprocess(blankToUndefined, z.string().trim().max(160).optional()),
+    rate_half_day: count,
+    rate_full_day: count,
+    travel_willing: z.coerce.boolean().default(false),
+    buyout_terms: z.preprocess(
+      blankToUndefined,
+      z.string().trim().max(600).optional(),
+    ),
+
     /** Honeypot. Bots fill it, humans never see it. */
     website: z.string().max(0, "Rejected").optional(),
   })
   /* We have to be able to find the work. For an influencer that means a
-     handle; a UGC creator may have no audience at all, so a portfolio link or
+     handle; a creator may have no audience at all, so a portfolio link or
      an uploaded sample counts just as well. */
   .refine(
     (d) => {
@@ -165,7 +208,7 @@ export const creatorSubmissionSchema = z
     },
   )
   /* Follower counts are only meaningful for someone selling reach. Asking a
-     UGC creator for one - and rejecting them without it - is the exact
+     creator for one - and rejecting them without it - is the exact
      confusion this field exists to remove. */
   .refine(
     (d) =>
@@ -179,7 +222,39 @@ export const creatorSubmissionSchema = z
       message: "Enter your follower count on at least one platform",
       path: ["instagram_followers"],
     },
-  );
+  )
+  /* Height is the one field every casting brief filters on, so a model row
+     without it is unbookable. Nobody else is ever asked for it. */
+  .refine((d) => !isModel(d.talent_type) || d.height_cm != null, {
+    message: "Height is what casting filters on — give it in centimetres",
+    path: ["height_cm"],
+  })
+  /* And what they are cast for, which is the model's answer to a genre. */
+  .refine((d) => !isModel(d.talent_type) || d.model_categories.length > 0, {
+    message: "Pick at least one thing you get cast for",
+    path: ["model_categories"],
+  });
+
+/** The submission fields that belong to `model_profiles`, not to `creators`. */
+export const MODEL_PROFILE_FIELDS = [
+  "height_cm",
+  "bust_cm",
+  "waist_cm",
+  "hips_cm",
+  "dress_size",
+  "shoe_size",
+  "hair_colour",
+  "eye_colour",
+  "visible_tattoos",
+  "model_categories",
+  "experience_level",
+  "agency_signed",
+  "agency_name",
+  "rate_half_day",
+  "rate_full_day",
+  "travel_willing",
+  "buyout_terms",
+] as const;
 
 export type CreatorSubmission = z.infer<typeof creatorSubmissionSchema>;
 
@@ -190,6 +265,7 @@ export function formDataToObject(fd: FormData) {
     "secondary_genres",
     "content_formats",
     "showcase_media_paths",
+    "model_categories",
   ]);
   const out: Record<string, unknown> = {};
   for (const key of new Set(fd.keys())) {

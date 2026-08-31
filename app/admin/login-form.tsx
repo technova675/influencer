@@ -17,15 +17,22 @@ function Submit() {
   );
 }
 
-export function LoginForm() {
+export function LoginForm({
+  redirectTo = "/admin",
+  heading = "Agency sign in",
+  blurb = "The roster, its contact details and the review queue live behind this.",
+}: {
+  redirectTo?: string;
+  heading?: string;
+  blurb?: string;
+}) {
   const [state, action] = useActionState<LoginState, FormData>(login, {});
 
   return (
     <form action={action} className="card w-full max-w-sm p-8">
-      <h1 className="display-sm text-2xl">Agency sign in</h1>
-      <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-        The roster, its contact details and the review queue live behind this.
-      </p>
+      <input type="hidden" name="next" value={redirectTo} />
+      <h1 className="display-sm text-2xl">{heading}</h1>
+      <p className="mt-2 text-sm leading-relaxed text-ink-soft">{blurb}</p>
 
       <div className="mt-7">
         <label htmlFor="password" className="label">

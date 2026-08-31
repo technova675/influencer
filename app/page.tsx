@@ -1,175 +1,206 @@
-import Link from "next/link";
+import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { SiteFooter, SiteNav } from "@/components/site-nav";
-import { CreatorCard } from "@/components/creator-card";
-import { TalentExplainer, TwoDoor } from "@/components/two-door";
-import { fetchCreators, fetchStats } from "@/lib/queries";
-import { GENRES, compactNumber } from "@/lib/taxonomy";
+import { chooseRole } from "@/app/actions/role";
+import { fetchStats } from "@/lib/queries";
+import { ROLE_COOKIE, ROLE_LIST, roleById } from "@/lib/roles";
+import { compactNumber } from "@/lib/taxonomy";
 
-export const revalidate = 60;
+export const metadata: Metadata = {
+  title: "Callsheet — influencers, creators and models",
+  description:
+    "Tell us which one you are. Influencers, creators and models each get their own application; brands get a shortlist filtered against the brief.",
+};
 
-function Stat({ figure, label }: { figure: string; label: string }) {
+/**
+ * Onboarding. The only page everybody sees, and it exists to ask one question.
+ *
+ * Everything downstream is scoped to the answer: a model never reads about
+ * follower tiers, an influencer is never asked for measurements, and no one on
+ * the roster is ever shown anyone else. Splitting here rather than filtering
+ * later is what makes that a property of the site's shape rather than a setting
+ * somebody could get wrong.
+ */
+
+function Door({
+  role,
+  eyebrow,
+  title,
+  line,
+  accent,
+}: {
+  role: string;
+  eyebrow: string;
+  title: string;
+  line: string;
+  accent: string;
+}) {
   return (
-    <div>
-      <div className="stat-figure tabular text-4xl sm:text-5xl">{figure}</div>
-      <div className="mt-2 text-sm text-ink-soft">{label}</div>
-    </div>
+    <button
+      type="submit"
+      name="role"
+      value={role}
+      className="door reveal w-full cursor-pointer text-left"
+      style={{ "--door-accent": accent } as React.CSSProperties}
+    >
+      <p className="overline">{eyebrow}</p>
+      <h2 className="display-sm mt-3 text-[clamp(1.35rem,2.6vw,1.75rem)]">
+        {title}
+      </h2>
+      <p className="measure mt-3 text-sm leading-relaxed text-ink-soft">{line}</p>
+      <span
+        className="mt-6 inline-flex items-center gap-2 text-sm font-medium"
+        style={{ color: accent }}
+      >
+        Continue
+        <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden>
+          <path
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M2 8h11m-4.5-4.5L13 8l-4.5 4.5"
+          />
+        </svg>
+      </span>
+    </button>
   );
 }
 
-export default async function HomePage() {
-  // The landing page degrades to a working marketing page if the database is
-  // not reachable yet - useful before the schema has been run.
-  const [stats, featured] = await Promise.all([
+const DOOR_COPY: Record<string, { eyebrow: string; title: string; line: string }> = {
+  influencer: {
+    eyebrow: "I post on my own channel",
+    title: "Influencer",
+    line: "Brands pay to reach the audience you've already built. You post it, in your voice, for a rate you set.",
+  },
+  creator: {
+    eyebrow: "I shoot, the brand posts",
+    title: "Creator",
+    line: "You make the footage and hand it over — the brand runs it as their own ad. No audience needed.",
+  },
+  model: {
+    eyebrow: "I get booked for shoots",
+    title: "Model",
+    line: "Campaigns, catalogue, runway, print. Paid for the day and the usage, not for a post.",
+  },
+};
+
+export default async function OnboardingPage() {
+  const [jar, stats] = await Promise.all([
+    cookies(),
     fetchStats().catch(() => ({
       total: 0,
       approved: 0,
       pending: 0,
       cities: 0,
       influencers: 0,
-      ugc: 0,
+      creators: 0,
+      models: 0,
     })),
-    fetchCreators({ perPage: 3, sort: "followers" })
-      .then((r) => r.creators)
-      .catch(() => []),
   ]);
+
+  const rememberedRole = roleById(jar.get(ROLE_COOKIE)?.value);
 
   return (
     <>
-      <SiteNav />
+      <SiteNav variant="bare" />
 
-      <main className="flex-1">
-        {/* ---------------- Hero ---------------- */}
-        <section className="ground-1 px-5 pt-16 pb-20 sm:px-8 sm:pt-24 sm:pb-24">
-          <div className="mx-auto max-w-5xl">
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="overline reveal">
-                One roster of creators, influencers and UGC talent
-              </p>
-              <h1 className="display reveal mt-5 text-[clamp(2.5rem,7vw,4.75rem)]">
-                Get paid for
-                <br />
-                what you make.
-              </h1>
-              <p className="measure reveal mx-auto mt-6 text-base leading-relaxed text-ink-soft sm:text-lg">
-                List yourself free, set your own rates, and turn up in the
-                filters brands actually search — genre, city, language, budget.
-                Brands: the same roster, already reviewed, with rates on every
-                card.
-              </p>
-            </div>
+      <main className="ground-2 flex-1 px-5 py-16 sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-5xl">
+          <header className="mx-auto max-w-2xl text-center">
+            <p className="overline reveal">Callsheet</p>
+            <h1 className="display reveal mt-5 text-[clamp(2.25rem,6vw,4rem)]">
+              First — which
+              <br />
+              one are you?
+            </h1>
+            <p className="measure reveal mx-auto mt-6 leading-relaxed text-ink-soft sm:text-lg">
+              The three do genuinely different work and get hired on completely
+              different things, so each has its own page and its own
+              application. Pick yours and you&rsquo;ll never be shown the other
+              two again.
+            </p>
+          </header>
 
-            <div className="mt-11">
-              <TwoDoor />
-            </div>
+          {/* A returning visitor is offered their own page rather than being
+              made to answer the same question twice - but never forced back
+              into it, in case they chose wrong the first time. */}
+          {rememberedRole && (
+            <form
+              action={chooseRole}
+              className="reveal mx-auto mt-9 flex max-w-md justify-center"
+            >
+              <input type="hidden" name="role" value={rememberedRole.id} />
+              <button type="submit" className="btn btn-primary">
+                Continue as {rememberedRole.label.toLowerCase()}
+              </button>
+            </form>
+          )}
 
-            <div className="reveal mt-14 grid grid-cols-3 gap-6 border-t border-line/70 pt-10 text-center">
-              <Stat
-                figure={stats.approved > 0 ? `${stats.approved}+` : "—"}
-                label="profiles on the roster"
+          <form action={chooseRole} className="mt-12 grid gap-5 md:grid-cols-3">
+            {ROLE_LIST.map((r) => (
+              <Door
+                key={r.id}
+                role={r.id}
+                accent={r.accent}
+                eyebrow={DOOR_COPY[r.id].eyebrow}
+                title={DOOR_COPY[r.id].title}
+                line={DOOR_COPY[r.id].line}
               />
-              <Stat
-                figure={stats.cities > 0 ? String(stats.cities) : "—"}
-                label="cities covered"
-              />
-              <Stat figure="Free" label="to list yourself" />
-            </div>
-          </div>
-        </section>
+            ))}
+          </form>
 
-        {/* ---------------- The distinction ---------------- */}
-        <section className="ground-2 px-5 py-20 sm:px-8 sm:py-24">
-          <div className="mx-auto max-w-6xl">
-            <div className="reveal mx-auto max-w-2xl text-center">
-              <p className="overline">The difference</p>
-              <h2 className="display-sm mt-4 text-[clamp(1.75rem,4vw,2.75rem)]">
-                Two ways to work with brands
-              </h2>
-              <p className="measure mx-auto mt-4 leading-relaxed text-ink-soft">
-                Most rosters mix these into one list, which helps nobody. Here
-                they are separate — different cards, different filters,
-                different rates. Do one, or do both.
-              </p>
-            </div>
-            <div className="mt-11">
-              <TalentExplainer
-                counts={{ influencers: stats.influencers, ugc: stats.ugc }}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* ---------------- Genres ---------------- */}
-        <section className="ground-3 px-5 py-20 sm:px-8 sm:py-24">
-          <div className="mx-auto max-w-6xl">
-            <div className="reveal max-w-2xl">
-              <h2 className="display-sm text-[clamp(1.75rem,4vw,2.75rem)]">
-                Every genre a brief asks for
-              </h2>
-              <p className="measure mt-4 leading-relaxed text-ink-soft">
-                Sorted the way a client thinks about it, not the way a
-                spreadsheet stores it.
-              </p>
-            </div>
-            <div className="reveal mt-10 flex flex-wrap gap-2.5">
-              {GENRES.map((g) => (
-                <Link
-                  key={g}
-                  href={`/roster?genre=${encodeURIComponent(g)}`}
-                  className="chip hover:!border-ink hover:!bg-ink hover:!text-white"
-                >
-                  {g}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ---------------- Featured creators ---------------- */}
-        {featured.length > 0 && (
-          <section className="ground-4 px-5 py-20 sm:px-8 sm:py-24">
-            <div className="mx-auto max-w-6xl">
-              <div className="reveal flex flex-wrap items-end justify-between gap-4">
-                <div className="max-w-2xl">
-                  <h2 className="display-sm text-[clamp(1.75rem,4vw,2.75rem)]">
-                    What a profile looks like
-                  </h2>
-                  <p className="measure mt-4 leading-relaxed text-ink-soft">
-                    Reach and rate card on an influencer. Samples, turnaround
-                    and per-video price on a UGC creator. Never the same card
-                    for both.
-                  </p>
-                </div>
-                <Link href="/roster" className="btn btn-ghost">
-                  See all
-                </Link>
+          {/* The brand door is separated because a brand is not applying to
+              anything - it is the other side of the marketplace. */}
+          <form action={chooseRole} className="mt-5">
+            <button
+              type="submit"
+              name="role"
+              value="brand"
+              className="card reveal flex w-full cursor-pointer flex-wrap items-center justify-between gap-5 p-6 text-left transition-shadow duration-300 hover:shadow-[var(--shadow-md)] sm:p-7"
+            >
+              <div>
+                <p className="overline">I&rsquo;m hiring</p>
+                <h2 className="display-sm mt-2 text-xl">
+                  Brand, agency or casting
+                </h2>
+                <p className="measure mt-2 text-sm leading-relaxed text-ink-soft">
+                  Send the brief. We filter the roster against it and come back
+                  with a shortlist — names, rates and availability included.
+                </p>
               </div>
-              <div className="reveal mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {featured.map((c) => (
-                  <CreatorCard key={c.id} creator={c} />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+              <span className="text-sm font-medium text-accent">
+                Continue &rarr;
+              </span>
+            </button>
+          </form>
 
-        {/* ---------------- Close ---------------- */}
-        <section className="ground-5 px-5 py-24 sm:px-8 sm:py-32">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="display reveal text-[clamp(2rem,5.5vw,3.5rem)]">
-              {stats.approved > 0
-                ? `${compactNumber(stats.approved)} creators, already sorted.`
-                : "The roster starts with you."}
-            </h2>
-            <div className="reveal mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link href="/join" className="btn btn-accent w-full sm:w-auto">
-                Add yourself — free
-              </Link>
-              <Link href="/for-brands" className="btn btn-ghost w-full sm:w-auto">
-                I&rsquo;m hiring creators
-              </Link>
+          <div className="reveal mt-16 grid grid-cols-3 gap-6 border-t border-line/70 pt-10 text-center">
+            <div>
+              <div className="stat-figure tabular text-3xl sm:text-4xl">
+                {stats.approved > 0 ? compactNumber(stats.approved) : "—"}
+              </div>
+              <div className="mt-2 text-sm text-ink-soft">on the roster</div>
+            </div>
+            <div>
+              <div className="stat-figure tabular text-3xl sm:text-4xl">
+                {stats.cities > 0 ? stats.cities : "—"}
+              </div>
+              <div className="mt-2 text-sm text-ink-soft">cities covered</div>
+            </div>
+            <div>
+              <div className="stat-figure text-3xl sm:text-4xl">Free</div>
+              <div className="mt-2 text-sm text-ink-soft">to apply, always</div>
             </div>
           </div>
-        </section>
+
+          <p className="measure reveal mx-auto mt-10 text-center text-sm leading-relaxed text-ink-faint">
+            Whichever you pick: applying is free, there is no login for talent,
+            and nobody on the roster can see anyone else&rsquo;s profile, rates
+            or contact details.
+          </p>
+        </div>
       </main>
 
       <SiteFooter />

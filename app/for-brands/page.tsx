@@ -10,7 +10,7 @@ export const revalidate = 300;
 export const metadata: Metadata = {
   title: "For brands",
   description:
-    "A reviewed roster of influencers and UGC creators, filtered by genre, tier, city, language and budget — with rates on every card.",
+    "A reviewed roster of influencers and creators, filtered by genre, tier, city, language and budget — with rates on every card.",
 };
 
 const STEPS = [
@@ -43,7 +43,7 @@ const DIFFERENTIATORS = [
   },
   {
     t: "Rates upfront, in rupees",
-    d: "Per reel, per story, per post, per UGC video. You know the budget fits before you write the first email.",
+    d: "Per reel, per story, per post, per Video. You know the budget fits before you write the first email.",
   },
   {
     t: "Filters that match the brief",
@@ -59,7 +59,8 @@ export default async function ForBrandsPage() {
       pending: 0,
       cities: 0,
       influencers: 0,
-      ugc: 0,
+      creators: 0,
+      models: 0,
     })),
     fetchCreators({ perPage: 3, sort: "followers" })
       .then((r) => r.creators)
@@ -68,7 +69,7 @@ export default async function ForBrandsPage() {
 
   return (
     <>
-      <SiteNav />
+      <SiteNav role="brand" />
 
       <main className="flex-1">
         {/* ---------------- Hero ---------------- */}
@@ -81,19 +82,17 @@ export default async function ForBrandsPage() {
               in minutes.
             </h1>
             <p className="measure reveal mx-auto mt-6 text-base leading-relaxed text-ink-soft sm:text-lg">
-              A reviewed roster of influencers and UGC creators. Filter
-              by genre, tier, city, language and budget, and get a shortlist the
-              same day — not a spreadsheet three days later.
+              A reviewed roster of influencers, creators and models.
+              Filtered by genre, tier, city, language, casting and budget, and
+              back to you as a shortlist the same day — not a spreadsheet three
+              days later.
             </p>
             <div className="reveal mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link href="/roster" className="btn btn-accent w-full sm:w-auto">
-                Browse the roster
+              <Link href="#brief" className="btn btn-accent w-full sm:w-auto">
+                Send us a brief
               </Link>
-              <Link
-                href="/roster?talent=ugc_creator"
-                className="btn btn-ghost w-full sm:w-auto"
-              >
-                I need UGC, not reach
+              <Link href="#how" className="btn btn-ghost w-full sm:w-auto">
+                How it works
               </Link>
             </div>
 
@@ -106,9 +105,9 @@ export default async function ForBrandsPage() {
               </div>
               <div>
                 <div className="stat-figure tabular text-4xl sm:text-5xl">
-                  {stats.ugc > 0 ? stats.ugc : "—"}
+                  {stats.creators > 0 ? stats.creators : "—"}
                 </div>
-                <div className="mt-2 text-sm text-ink-soft">UGC creators</div>
+                <div className="mt-2 text-sm text-ink-soft">creators</div>
               </div>
               <div>
                 <div className="stat-figure tabular text-4xl sm:text-5xl">
@@ -136,7 +135,11 @@ export default async function ForBrandsPage() {
             </div>
             <div className="mt-11">
               <TalentExplainer
-                counts={{ influencers: stats.influencers, ugc: stats.ugc }}
+                counts={{
+                  influencers: stats.influencers,
+                  creators: stats.creators,
+                  models: stats.models,
+                }}
               />
             </div>
           </div>
@@ -172,17 +175,18 @@ export default async function ForBrandsPage() {
                   </h2>
                   <p className="measure mt-4 leading-relaxed text-ink-soft">
                     Reach, engagement and rate card on every influencer.
-                    Samples, turnaround and per-video price on every UGC
-                    creator.
+                    Samples, turnaround and per-video price on every creator
+                    creator. Digitals, measurements and day rate on every
+                    model. Full names and exact rates come with the shortlist.
                   </p>
                 </div>
-                <Link href="/roster" className="btn btn-ghost">
-                  See all
+                <Link href="#how" className="btn btn-ghost">
+                  How it works
                 </Link>
               </div>
               <div className="reveal mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {featured.map((c) => (
-                  <CreatorCard key={c.id} creator={c} />
+                  <CreatorCard key={c.id} creator={c} redacted />
                 ))}
               </div>
             </div>
@@ -211,16 +215,34 @@ export default async function ForBrandsPage() {
               ))}
             </ol>
 
-            <div className="reveal mt-14 text-center">
-              <Link href="/roster" className="btn btn-accent">
-                Start filtering
-              </Link>
+            <div id="brief" className="card reveal mt-16 p-7 text-center sm:p-10">
+              <p className="overline">Send a brief</p>
+              <h3 className="display-sm mt-3 text-2xl">
+                Tell us the campaign, get the shortlist
+              </h3>
+              <p className="measure mx-auto mt-3 leading-relaxed text-ink-soft">
+                Category, market, deliverable, timing and budget is enough to
+                start. We filter the roster against it and come back with names,
+                rates and availability — usually the same day.
+              </p>
+              <div className="mt-7">
+                <a
+                  href="mailto:hello@callsheet.in?subject=Campaign%20brief"
+                  className="btn btn-accent"
+                >
+                  Email us the brief
+                </a>
+              </div>
+              <p className="mt-4 text-xs text-ink-faint">
+                Prefer to browse yourself? The roster is private — ask us for
+                access.
+              </p>
             </div>
           </div>
         </section>
       </main>
 
-      <SiteFooter />
+      <SiteFooter role="brand" />
     </>
   );
 }
