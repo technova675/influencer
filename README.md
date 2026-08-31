@@ -1,15 +1,22 @@
-# Creator Roster
+# Callsheet
 
-A creator roster that collects influencer profiles into one Supabase database and
-lets the agency filter it against a client brief.
+A call sheet is the document a production sends the night before a shoot: who is
+booked, when, where, and for how much. This is that, as a product.
+
+Influencers, creators and models each apply through their own page. Everything
+lands in one Supabase database, and the agency filters it against a client brief
+to build a shortlist. Nobody on the roster can see anyone else.
 
 Three surfaces:
 
 | Route | Who it's for | What it does |
 | --- | --- | --- |
-| `/` | Brands | Landing page. Pulls live counts from the roster. |
-| `/join` | Creators | The submission form. Writes straight to Supabase. |
-| `/roster` | Brands | Approved creators only, filterable by genre, tier, city, language, budget. |
+| `/` | Everyone | Onboarding. Asks which of the four you are, once, and remembers it. |
+| `/for-influencers`, `/for-creators`, `/for-models` | Talent | One landing page per role. Each sees only its own. |
+| `/for-brands` | Brands | The only page that names all three types, because a brand hires across them. |
+| `/join?role=…` | Talent | The application, scoped to one role. Writes straight to Supabase. |
+| `/roster` | Agency | Private. The full roster, filterable by genre, tier, city, language, budget and casting. |
+| `/admin` | Agency | Review queue, tagging, notes, CSV export. |
 | `/admin` | The agency | Review queue, approve/reject, internal notes, CSV export. Password protected. |
 
 ---

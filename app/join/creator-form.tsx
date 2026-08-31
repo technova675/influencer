@@ -7,13 +7,16 @@ import {
   AGE_BANDS,
   CITIES,
   CONTENT_FORMATS,
+  EXPERIENCE_LEVELS,
   GENRES,
   LANGUAGES,
-  TALENT_TYPES,
+  MODEL_CATEGORIES,
+  isModel,
   sellsContent,
   sellsReach,
   type TalentType,
 } from "@/lib/taxonomy";
+import type { Role } from "@/lib/roles";
 import { ProfilePhotoUpload, ShowcaseUpload } from "@/components/media-upload";
 
 /* ------------------------------------------------------------------ atoms */
@@ -109,17 +112,40 @@ const FIELD_STEP: Record<string, number> = {
   primary_genre: 2,
   secondary_genres: 2,
   content_formats: 2,
+  model_categories: 2,
   instagram_handle: 3,
   instagram_followers: 3,
   engagement_rate: 3,
   portfolio_url: 3,
   showcase_media_paths: 3,
+  height_cm: 3,
+  bust_cm: 3,
+  waist_cm: 3,
+  hips_cm: 3,
+  dress_size: 3,
+  shoe_size: 3,
+  hair_colour: 3,
+  eye_colour: 3,
+  experience_level: 3,
+  agency_name: 3,
   rate_reel: 4,
-  rate_ugc_video: 4,
-  ugc_turnaround_days: 4,
+  rate_video: 4,
+  turnaround_days: 4,
+  rate_half_day: 4,
+  rate_full_day: 4,
+  buyout_terms: 4,
 };
 
 const STEP_COUNT = 5;
+
+/**
+ * The role is chosen on the landing page now, not in the form, so step 0 - the
+ * "how do you work with brands" question - never renders. The indices below
+ * stay as they were so FIELD_STEP keeps pointing at the right question; only
+ * the number shown to the applicant is shifted.
+ */
+const FIRST_STEP = 1;
+const VISIBLE_STEPS = STEP_COUNT - FIRST_STEP;
 
 function StepHead({
   step,
@@ -133,7 +159,7 @@ function StepHead({
   return (
     <div className="mb-7">
       <p className="overline">
-        Step {step + 1} of {STEP_COUNT}
+        Step {step - FIRST_STEP + 1} of {VISIBLE_STEPS}
       </p>
       <h2 className="display-sm mt-2.5 text-2xl sm:text-3xl">{title}</h2>
       <p className="measure mt-2.5 text-sm leading-relaxed text-ink-soft">
@@ -160,17 +186,25 @@ function SubmitButton() {
 
 const initial: SubmitState = { ok: false };
 
-export function CreatorForm() {
+export function CreatorForm({ role }: { role: Role }) {
   const [state, action] = useActionState(submitCreator, initial);
-  const [step, setStep] = useState(0);
-  const [type, setType] = useState<TalentType | "">("");
+  const [step, setStep] = useState(FIRST_STEP);
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
   const topRef = useRef<HTMLDivElement>(null);
 
+  // An influencer who also takes content-only briefs is stored as `both`, and
+  // is the one way a single applicant lands in two sets of results. It is a
+  // checkbox inside the influencer flow rather than a fourth door, because
+  // nobody thinks of themselves as a "both".
+  const [alsoContent, setAlsoContent] = useState(false);
+  const type: TalentType =
+    role.talentType === "influencer" && alsoContent ? "both" : role.talentType;
+
   const err = useMemo(() => state.errors ?? {}, [state.errors]);
 
-  const reach = sellsReach(type || "influencer");
-  const content = sellsContent(type || "influencer");
+  const reach = sellsReach(type);
+  const content = sellsContent(type);
+  const model = isModel(type);
 
   // A rejected submission lands on whichever step holds the first bad field.
   // Adjusted during render rather than in an effect: this is state derived from
@@ -181,7 +215,12 @@ export function CreatorForm() {
     setSeenState(state);
     const keys = Object.keys(state.errors ?? {});
     if (keys.length > 0) {
-      setStep(Math.min(...keys.map((k) => FIELD_STEP[k] ?? 1)));
+      setStep(
+        Math.max(
+          FIRST_STEP,
+          Math.min(...keys.map((k) => FIELD_STEP[k] ?? FIRST_STEP)),
+        ),
+      );
     }
   }
 
@@ -257,7 +296,11 @@ export function CreatorForm() {
           form, and the rail is what makes that legible before they start. */}
       <div className="mb-8">
         <div className="rail">
-          <span style={{ width: `${((step + 1) / STEP_COUNT) * 100}%` }} />
+          <span
+            style={{
+              width: `${((step - FIRST_STEP + 1) / VISIBLE_STEPS) * 100}%`,
+            }}
+          />
         </div>
       </div>
 
@@ -267,42 +310,11 @@ export function CreatorForm() {
         <input id="website" name="website" tabIndex={-1} autoComplete="off" />
       </div>
 
-      <div className="card p-6 sm:p-9">
-        {/* ---------------------------------------------------- 0: type --- */}
-        <div ref={(el) => { stepRefs.current[0] = el; }} hidden={show(0)}>
-          <StepHead
-            step={0}
-            title="How do you work with brands?"
-            blurb="This is the only question that changes the rest of the form — and it's how brands find you. Pick the one that sounds most like you."
-          />
-          <div className="space-y-3">
-            {TALENT_TYPES.map((t) => (
-              <label key={t.id} className="choice">
-                <input
-                  type="radio"
-                  name="talent_type"
-                  value={t.id}
-                  required
-                  checked={type === t.id}
-                  onChange={() => setType(t.id)}
-                />
-                <span className="display-sm block text-lg">{t.label}</span>
-                <span className="mt-0.5 block text-sm font-medium text-accent">
-                  {t.short}
-                </span>
-                <span className="measure mt-2 block text-sm leading-relaxed text-ink-soft">
-                  {t.blurb}
-                </span>
-              </label>
-            ))}
-          </div>
-          {err.talent_type && (
-            <p role="alert" className="mt-3 text-xs text-[#c0392b]">
-              {err.talent_type}
-            </p>
-          )}
-        </div>
+      {/* The role came from the landing page they applied through, so it is
+          carried as a hidden field rather than asked again. */}
+      <input type="hidden" name="talent_type" value={type} />
 
+      <div className="card p-6 sm:p-9">
         {/* ----------------------------------------------------- 1: you --- */}
         <div ref={(el) => { stepRefs.current[1] = el; }} hidden={show(1)}>
           <StepHead
@@ -398,11 +410,19 @@ export function CreatorForm() {
 
         {/* -------------------------------------------------- 2: what ----- */}
         <div ref={(el) => { stepRefs.current[2] = el; }} hidden={show(2)}>
-          <StepHead
-            step={2}
-            title="What you make"
-            blurb="One main genre is all we need. Everything else here just widens the briefs you turn up in."
-          />
+          {model ? (
+            <StepHead
+              step={2}
+              title="What you get cast for"
+              blurb="The category is what a casting brief is written in, so pick every one you'd genuinely take. The genre is the world you sit in — fashion, beauty, fitness."
+            />
+          ) : (
+            <StepHead
+              step={2}
+              title="What you make"
+              blurb="One main genre is all we need. Everything else here just widens the briefs you turn up in."
+            />
+          )}
           <div className="space-y-5">
             <Field
               label="Primary genre"
@@ -430,9 +450,31 @@ export function CreatorForm() {
               <ChipGroup name="secondary_genres" options={GENRES} />
             </Field>
 
-            <Field label="Formats you deliver" name="content_formats" optional>
-              <ChipGroup name="content_formats" options={CONTENT_FORMATS} />
-            </Field>
+            {role.talentType === "influencer" && (
+              <label className="chip !rounded-[var(--radius)] !px-4 !py-3">
+                <input
+                  type="checkbox"
+                  checked={alsoContent}
+                  onChange={(e) => setAlsoContent(e.target.checked)}
+                />
+                I also take content-only briefs the brand runs as its own ad
+              </label>
+            )}
+
+            {model ? (
+              <Field
+                label="Cast for"
+                name="model_categories"
+                hint="Pick every one you'd take a booking for."
+                error={err.model_categories}
+              >
+                <ChipGroup name="model_categories" options={MODEL_CATEGORIES} />
+              </Field>
+            ) : (
+              <Field label="Formats you deliver" name="content_formats" optional>
+                <ChipGroup name="content_formats" options={CONTENT_FORMATS} />
+              </Field>
+            )}
           </div>
         </div>
 
@@ -443,6 +485,12 @@ export function CreatorForm() {
               step={3}
               title="Where your audience is"
               blurb="We check these before a profile goes live, so honest numbers work in your favour. Fill in the platforms you actually use and skip the rest."
+            />
+          ) : model ? (
+            <StepHead
+              step={3}
+              title="Your stats and digitals"
+              blurb="This is your comp card. Height is the one thing every casting brief filters on; the rest narrows which briefs you turn up in. Only the agency ever sees these — they are never shown publicly."
             />
           ) : (
             <StepHead
@@ -571,12 +619,92 @@ export function CreatorForm() {
               </>
             )}
 
-            {!reach && (
+            {model && (
+              <>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field
+                    label="Height (cm)"
+                    name="height_cm"
+                    hint="In centimetres, not feet — 173."
+                    error={err.height_cm}
+                  >
+                    <Text
+                      name="height_cm"
+                      inputMode="numeric"
+                      placeholder="173"
+                      required
+                      error={err.height_cm}
+                    />
+                  </Field>
+                  <Field label="Experience" name="experience_level" optional>
+                    <select
+                      id="experience_level"
+                      name="experience_level"
+                      className="field"
+                      defaultValue=""
+                    >
+                      <option value="">Select</option>
+                      {EXPERIENCE_LEVELS.map((e) => (
+                        <option key={e.id} value={e.id}>
+                          {e.label}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-3">
+                  <Field label="Bust / chest (cm)" name="bust_cm" optional>
+                    <Text name="bust_cm" inputMode="numeric" placeholder="86" />
+                  </Field>
+                  <Field label="Waist (cm)" name="waist_cm" optional>
+                    <Text name="waist_cm" inputMode="numeric" placeholder="61" />
+                  </Field>
+                  <Field label="Hips (cm)" name="hips_cm" optional>
+                    <Text name="hips_cm" inputMode="numeric" placeholder="89" />
+                  </Field>
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field label="Dress / shirt size" name="dress_size" optional>
+                    <Text name="dress_size" placeholder="S / 8 / 38" />
+                  </Field>
+                  <Field label="Shoe size" name="shoe_size" optional>
+                    <Text name="shoe_size" placeholder="UK 7" />
+                  </Field>
+                  <Field label="Hair colour" name="hair_colour" optional>
+                    <Text name="hair_colour" placeholder="Black" />
+                  </Field>
+                  <Field label="Eye colour" name="eye_colour" optional>
+                    <Text name="eye_colour" placeholder="Brown" />
+                  </Field>
+                </div>
+
+                <label className="chip !rounded-[var(--radius)] !px-4 !py-3">
+                  <input type="checkbox" name="visible_tattoos" value="true" />
+                  I have visible tattoos
+                </label>
+
+                {/* An existing exclusivity is the thing the agency has to know
+                    before it pitches somebody, so it is asked plainly. */}
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <label className="chip !rounded-[var(--radius)] !px-4 !py-3">
+                    <input type="checkbox" name="agency_signed" value="true" />
+                    I&rsquo;m signed to an agency
+                  </label>
+                  <Field label="Which agency" name="agency_name" optional>
+                    <Text name="agency_name" placeholder="Agency name" />
+                  </Field>
+                </div>
+              </>
+            )}
+
+            {!reach && !model && (
               <Field
                 label="Social handle"
                 name="instagram_handle"
                 optional
-                hint="Only if you have one — a UGC profile does not need an audience."
+                hint="Only if you have one — a creator profile does not need an audience."
                 error={err.instagram_handle}
               >
                 <Text
@@ -602,10 +730,20 @@ export function CreatorForm() {
             </Field>
 
             <Field
-              label={content ? "Sample work" : "Showcase photos and video"}
+              label={
+                model
+                  ? "Digitals and portfolio shots"
+                  : content
+                    ? "Sample work"
+                    : "Showcase photos and video"
+              }
               name="showcase_media_paths"
               optional={reach}
-              hint="Up to 6 files. Images under 8MB, video under 200MB."
+              hint={
+                model
+                  ? "Up to 6 files. A clean headshot and a full-length, plus any book shots. Images under 8MB, video under 200MB."
+                  : "Up to 6 files. Images under 8MB, video under 200MB."
+              }
               error={err.showcase_media_paths}
             >
               <ShowcaseUpload />
@@ -618,7 +756,11 @@ export function CreatorForm() {
           <StepHead
             step={4}
             title="What you charge"
-            blurb="Rupees per deliverable. Leave blank anything you don't offer — you can always update this later by submitting the form again with the same email."
+            blurb={
+              model
+                ? "Rupees per booking. Leave blank anything you don't offer — you can always update this later by submitting the form again with the same email."
+                : "Rupees per deliverable. Leave blank anything you don't offer — you can always update this later by submitting the form again with the same email."
+            }
           />
 
           <div className="space-y-5">
@@ -662,35 +804,76 @@ export function CreatorForm() {
                   Content only — the brand runs the ad
                 </div>
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <Field label="Per UGC video" name="rate_ugc_video" optional>
+                  <Field label="Per Video" name="rate_video" optional>
                     <Text
-                      name="rate_ugc_video"
+                      name="rate_video"
                       inputMode="numeric"
                       placeholder="12000"
                     />
                   </Field>
                   <Field
                     label="Turnaround (days)"
-                    name="ugc_turnaround_days"
+                    name="turnaround_days"
                     optional
                     hint="From brief to delivered footage."
-                    error={err.ugc_turnaround_days}
+                    error={err.turnaround_days}
                   >
                     <Text
-                      name="ugc_turnaround_days"
+                      name="turnaround_days"
                       inputMode="numeric"
                       placeholder="7"
-                      error={err.ugc_turnaround_days}
+                      error={err.turnaround_days}
                     />
                   </Field>
                 </div>
               </div>
             )}
 
-            <label className="chip !rounded-[var(--radius)] !px-4 !py-3">
-              <input type="checkbox" name="barter_open" value="true" />
-              I&rsquo;m open to barter collaborations
-            </label>
+            {model && (
+              <div className="space-y-5">
+                <div className="overline">To book you for a shoot</div>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field label="Half day" name="rate_half_day" optional>
+                    <Text
+                      name="rate_half_day"
+                      inputMode="numeric"
+                      placeholder="15000"
+                    />
+                  </Field>
+                  <Field label="Full day" name="rate_full_day" optional>
+                    <Text
+                      name="rate_full_day"
+                      inputMode="numeric"
+                      placeholder="25000"
+                    />
+                  </Field>
+                </div>
+
+                <Field
+                  label="Usage / buyout terms"
+                  name="buyout_terms"
+                  optional
+                  hint="What the day rate covers, and what costs extra. Plain words are fine."
+                >
+                  <Text
+                    name="buyout_terms"
+                    placeholder="Day rate covers 6 months digital in India. Print quoted separately."
+                  />
+                </Field>
+
+                <label className="chip !rounded-[var(--radius)] !px-4 !py-3">
+                  <input type="checkbox" name="travel_willing" value="true" />
+                  I&rsquo;ll travel for a shoot
+                </label>
+              </div>
+            )}
+
+            {!model && (
+              <label className="chip !rounded-[var(--radius)] !px-4 !py-3">
+                <input type="checkbox" name="barter_open" value="true" />
+                I&rsquo;m open to barter collaborations
+              </label>
+            )}
 
             <Field
               label="Brands you've worked with"
@@ -727,10 +910,10 @@ export function CreatorForm() {
 
       {/* ------------------------------------------------------ nav ------- */}
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        {step > 0 && (
+        {step > FIRST_STEP && (
           <button
             type="button"
-            onClick={() => setStep((s) => Math.max(0, s - 1))}
+            onClick={() => setStep((s) => Math.max(FIRST_STEP, s - 1))}
             className="btn btn-ghost"
           >
             Back
@@ -741,8 +924,7 @@ export function CreatorForm() {
           <button
             type="button"
             onClick={next}
-            disabled={step === 0 && type === ""}
-            className="btn btn-accent !py-3.5 text-base disabled:opacity-40 sm:!px-10"
+            className="btn btn-accent !py-3.5 text-base sm:!px-10"
           >
             Continue
           </button>

@@ -18,12 +18,14 @@
   --accent-ink: #ffffff;
 
   /* One colour per side of the marketplace. The pairing is the whole point:
-     a reader should be able to tell an influencer card from a UGC card from
-     across the room, before reading a single word of it. */
+     a reader should be able to tell an influencer card from a Creator card from a
+     model card across the room, before reading a single word of it. */
   --influencer: #1e40ff;
   --influencer-soft: #e8ecff;
-  --ugc: #b8531c;
-  --ugc-soft: #fdeee2;
+  --creator: #b8531c;
+  --creator-soft: #fdeee2;
+  --model: #146b5c;
+  --model-soft: #e2f3ef;
 
   /* Section grounds, in scroll order */
   --ground-1: #eef1fb;
@@ -51,8 +53,10 @@
   --color-accent-soft: var(--accent-soft);
   --color-influencer: var(--influencer);
   --color-influencer-soft: var(--influencer-soft);
-  --color-ugc: var(--ugc);
-  --color-ugc-soft: var(--ugc-soft);
+  --color-creator: var(--creator);
+  --color-creator-soft: var(--creator-soft);
+  --color-model: var(--model);
+  --color-model-soft: var(--model-soft);
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
@@ -403,10 +407,16 @@ html.js-reveal .reveal.is-visible {
   border-color: color-mix(in srgb, var(--influencer) 18%, transparent);
 }
 
-.badge-talent--ugc_creator {
-  background: var(--ugc-soft);
-  color: var(--ugc);
-  border-color: color-mix(in srgb, var(--ugc) 20%, transparent);
+.badge-talent--creator {
+  background: var(--creator-soft);
+  color: var(--creator);
+  border-color: color-mix(in srgb, var(--creator) 20%, transparent);
+}
+
+.badge-talent--model {
+  background: var(--model-soft);
+  color: var(--model);
+  border-color: color-mix(in srgb, var(--model) 20%, transparent);
 }
 
 /* "Both" reads as neither colour rather than a muddy blend of the two. */
@@ -417,7 +427,7 @@ html.js-reveal .reveal.is-visible {
 }
 
 /* ---------------------------------------------------------------------------
-   Segmented control. Used for the roster's Influencers / UGC switch and for
+   Segmented control. Used for the roster's Influencers / Creator switch and for
    the form's talent-type question, so the same choice looks the same in both
    places.
    --------------------------------------------------------------------------- */

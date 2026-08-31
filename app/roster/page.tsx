@@ -7,17 +7,26 @@ import { RosterFilters } from "@/components/roster-filters";
 import { fetchCreators, type RosterFilters as Filters } from "@/lib/queries";
 import type { TalentType, Tier } from "@/lib/taxonomy";
 import { TALENT_TYPE_IDS } from "@/lib/taxonomy";
+import { isAuthed } from "@/lib/auth";
+import { LoginForm } from "@/app/admin/login-form";
 
 export const metadata: Metadata = {
   title: "The roster",
   description:
-    "Filter creators by genre, follower tier, city, language and budget.",
+    "The agency's internal roster of influencers, creators and models.",
+  // The roster is the agency's asset and it now requires a session, so there
+  // is nothing here for a crawler to have.
+  robots: { index: false, follow: false },
 };
 
 function parseFilters(sp: Record<string, string | string[] | undefined>): Filters {
   const one = (k: string) => {
     const v = sp[k];
     return Array.isArray(v) ? v[0] : v;
+  };
+  const positive = (v: string | undefined) => {
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0 ? n : undefined;
   };
   const rate = Number(one("maxReelRate"));
   const page = Number(one("page"));
@@ -35,6 +44,9 @@ function parseFilters(sp: Record<string, string | string[] | undefined>): Filter
     city: one("city"),
     language: one("language"),
     maxReelRate: Number.isFinite(rate) && rate > 0 ? rate : undefined,
+    modelCategory: one("modelCategory"),
+    minHeight: positive(one("minHeight")),
+    maxDayRate: positive(one("maxDayRate")),
     sort:
       sort === "followers" || sort === "recent" || sort === "engagement"
         ? sort
@@ -65,7 +77,7 @@ async function Results({ filters }: { filters: Filters }) {
   if (creators.length === 0) {
     return (
       <div className="py-24 text-center">
-        <h2 className="display-sm text-2xl">No creators match that yet</h2>
+        <h2 className="display-sm text-2xl">Nobody matches that yet</h2>
         <p className="measure mx-auto mt-3 text-ink-soft">
           Widen the tier or drop a filter. If the roster is brand new, the first
           approved profiles will show up here.
@@ -81,17 +93,21 @@ async function Results({ filters }: { filters: Filters }) {
     <>
       <p className="mt-7 text-sm text-ink-faint">
         <span className="tabular font-medium text-ink">{total}</span>{" "}
-        {filters.talent === "ugc_creator"
+        {filters.talent === "creator"
           ? total === 1
-            ? "UGC creator"
-            : "UGC creators"
+            ? "Creator"
+            : "Creators"
           : filters.talent === "influencer"
             ? total === 1
               ? "influencer"
               : "influencers"
-            : total === 1
-              ? "creator"
-              : "creators"}
+            : filters.talent === "model"
+              ? total === 1
+                ? "model"
+                : "models"
+              : total === 1
+                ? "profile"
+                : "profiles"}
       </p>
 
       <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -159,7 +175,62 @@ function Skeletons() {
   );
 }
 
+/**
+ * The roster is not public. Talent must not be able to see each other's
+ * profiles or each other's rates, and that is a promise a filtered view cannot
+ * keep - so the whole page sits behind the agency session, and an unsigned-in
+ * visitor is told what to do instead of being shown a single card.
+ */
+function Gate() {
+  return (
+    <>
+      <SiteNav />
+
+      <main className="ground-2 flex-1 px-5 py-16 sm:px-8 sm:py-24">
+        <div className="mx-auto grid max-w-4xl items-start gap-12 md:grid-cols-2">
+          <div>
+            <p className="overline">Private</p>
+            <h1 className="display mt-4 text-[clamp(2rem,5vw,3rem)]">
+              The roster isn&rsquo;t public.
+            </h1>
+            <p className="measure mt-5 leading-relaxed text-ink-soft">
+              Names, rates and contact details belong to the people on it. We
+              don&rsquo;t publish them, and nobody on the roster can see anyone
+              else&rsquo;s.
+            </p>
+            <p className="measure mt-4 leading-relaxed text-ink-soft">
+              <strong className="font-medium text-ink">Hiring?</strong> Send us
+              the brief and we&rsquo;ll come back with a shortlist — the
+              profiles that fit it, and nothing else.
+            </p>
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <Link href="/for-brands" className="btn btn-accent">
+                Send us a brief
+              </Link>
+              <Link href="/join" className="btn btn-ghost">
+                I&rsquo;m talent — add me
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex justify-center md:justify-end">
+            <LoginForm
+              redirectTo="/roster"
+              heading="Agency sign in"
+              blurb="For the team. Everything behind this is internal."
+            />
+          </div>
+        </div>
+      </main>
+
+      <SiteFooter />
+    </>
+  );
+}
+
 export default async function RosterPage(props: PageProps<"/roster">) {
+  if (!(await isAuthed())) return <Gate />;
+
   const sp = await props.searchParams;
   const filters = parseFilters(sp);
 
@@ -170,17 +241,19 @@ export default async function RosterPage(props: PageProps<"/roster">) {
       <main className="ground-2 flex-1 px-5 pb-20 sm:px-8">
         <div className="mx-auto max-w-6xl">
           <header className="py-12 sm:py-16">
-            <p className="overline">For brands</p>
+            <p className="overline">Internal</p>
             <h1 className="display mt-4 text-[clamp(2.25rem,6vw,3.75rem)]">
               The roster
             </h1>
             <p className="measure mt-5 leading-relaxed text-ink-soft">
-              Every profile here is reviewed and approved. Two kinds of talent,
-              kept apart on purpose:{" "}
+              Every profile here is reviewed and approved. Three kinds of
+              talent, kept apart on purpose:{" "}
               <strong className="font-medium text-ink">influencers</strong> post
-              to their own audience, and{" "}
-              <strong className="font-medium text-ink">UGC creators</strong>{" "}
-              shoot content you run as your own ad. Switch between them below.
+              to their own audience,{" "}
+              <strong className="font-medium text-ink">Creators</strong>{" "}
+              shoot content the brand runs as its own ad, and{" "}
+              <strong className="font-medium text-ink">models</strong> are
+              booked for the day. Switch between them below.
             </p>
           </header>
 

@@ -22,16 +22,16 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3200",
   ),
   title: {
-    default: "Creator Roster — creators, filtered by what a brand needs",
-    template: "%s · Creator Roster",
+    default: "Callsheet — influencers, creators and models, already sorted",
+    template: "%s · Callsheet",
   },
   description:
     "A live roster of creators across every genre, tier and city. Filter by audience, budget and format, and get a shortlist the same day.",
   openGraph: {
     type: "website",
-    title: "Creator Roster",
+    title: "Callsheet",
     description:
-      "Creators, filtered by what a brand actually needs. Shortlist in minutes.",
+      "Influencers, creators and models, filtered by what a brand actually needs. Shortlist in minutes.",
   },
   robots: { index: true, follow: true },
 };

@@ -5,7 +5,10 @@ import { isAuthed } from "@/lib/auth";
 import { fetchCreators, fetchStats, type CreatorRow } from "@/lib/queries";
 import {
   compactNumber,
+  experienceLabel,
+  formatHeight,
   formatRupees,
+  isModel,
   sellsReach,
   STATUSES,
   talentType,
@@ -43,6 +46,7 @@ function AdminRow({ creator }: { creator: CreatorRow }) {
   const photo = publicMediaUrl(creator.profile_photo_path);
   const handle =
     creator.instagram_handle ?? creator.youtube_handle ?? creator.x_handle;
+  const model = isModel(creator.talent_type) ? creator.model_profile : null;
 
   return (
     <details className="card overflow-hidden">
@@ -82,10 +86,19 @@ function AdminRow({ creator }: { creator: CreatorRow }) {
               {tierLabel(creator.effective_followers)}
             </div>
           </div>
+        ) : model ? (
+          <div className="hidden text-right sm:block">
+            <div className="tabular text-sm font-medium">
+              {formatRupees(model.rate_full_day) ?? "—"}
+            </div>
+            <div className="text-xs text-ink-faint">
+              {formatHeight(model.height_cm) ?? "full day"}
+            </div>
+          </div>
         ) : (
           <div className="hidden text-right sm:block">
             <div className="tabular text-sm font-medium">
-              {formatRupees(creator.rate_ugc_video) ?? "—"}
+              {formatRupees(creator.rate_video) ?? "—"}
             </div>
             <div className="text-xs text-ink-faint">per video</div>
           </div>
@@ -129,10 +142,28 @@ function AdminRow({ creator }: { creator: CreatorRow }) {
 
             <div>
               <div className="overline">
-                {sellsReach(creator.talent_type) ? "Reach" : "Delivery"}
+                {sellsReach(creator.talent_type)
+                  ? "Reach"
+                  : model
+                    ? "Casting"
+                    : "Delivery"}
               </div>
               <p className="tabular mt-1.5 text-ink-soft">
-                {sellsReach(creator.talent_type) ? (
+                {model ? (
+                  <>
+                    {formatHeight(model.height_cm) ?? "height not given"}
+                    {model.bust_cm && model.waist_cm && model.hips_cm
+                      ? ` · ${model.bust_cm}-${model.waist_cm}-${model.hips_cm}`
+                      : ""}
+                    {model.dress_size ? ` · dress ${model.dress_size}` : ""}
+                    {model.shoe_size ? ` · shoe ${model.shoe_size}` : ""}
+                    {model.hair_colour ? ` · ${model.hair_colour} hair` : ""}
+                    {model.eye_colour ? ` · ${model.eye_colour} eyes` : ""}
+                    {model.visible_tattoos ? " · visible tattoos" : ""}
+                    {" · "}
+                    {creator.showcase_media_paths.length} digitals
+                  </>
+                ) : sellsReach(creator.talent_type) ? (
                   <>
                     {compactNumber(creator.effective_followers)} followers ·{" "}
                     {creator.effective_engagement_rate ?? "—"}% engagement ·{" "}
@@ -140,8 +171,8 @@ function AdminRow({ creator }: { creator: CreatorRow }) {
                   </>
                 ) : (
                   <>
-                    {creator.ugc_turnaround_days
-                      ? `${creator.ugc_turnaround_days}-day turnaround`
+                    {creator.turnaround_days
+                      ? `${creator.turnaround_days}-day turnaround`
                       : "turnaround not given"}{" "}
                     · {creator.showcase_media_paths.length} samples
                   </>
@@ -152,6 +183,35 @@ function AdminRow({ creator }: { creator: CreatorRow }) {
               </p>
             </div>
 
+            {/* A model already signed elsewhere is the one thing you have to
+                know before pitching them, so it is called out rather than
+                buried in the measurements line. */}
+            {model && (
+              <div>
+                <div className="overline">Cast for</div>
+                <p className="mt-1.5 text-ink-soft">
+                  {model.model_categories.length > 0
+                    ? model.model_categories.join(", ")
+                    : "not given"}
+                  {experienceLabel(model.experience_level)
+                    ? ` · ${experienceLabel(model.experience_level)}`
+                    : ""}
+                  {model.travel_willing ? " · will travel" : ""}
+                </p>
+                {model.agency_signed && (
+                  <p className="mt-1.5 text-[#8a5a00]">
+                    Signed to {model.agency_name || "an agency"} — check
+                    exclusivity before pitching.
+                  </p>
+                )}
+                {model.buyout_terms && (
+                  <p className="mt-1.5 leading-relaxed text-ink-soft">
+                    {model.buyout_terms}
+                  </p>
+                )}
+              </div>
+            )}
+
             <div>
               <div className="overline">Rates</div>
               <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -160,7 +220,9 @@ function AdminRow({ creator }: { creator: CreatorRow }) {
                   ["Story", creator.rate_story],
                   ["Post", creator.rate_static_post],
                   ["YT", creator.rate_youtube_integration],
-                  ["UGC", creator.rate_ugc_video],
+                  ["Content", creator.rate_video],
+                  ["Half day", model?.rate_half_day ?? null],
+                  ["Full day", model?.rate_full_day ?? null],
                 ]
                   .filter(([, v]) => v != null)
                   .map(([l, v]) => (
@@ -250,6 +312,10 @@ async function AdminList({
     const v = sp[k];
     return Array.isArray(v) ? v[0] : v;
   };
+  const positiveInt = (v: string | undefined) => {
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0 ? n : undefined;
+  };
   const page = Number(one("page"));
   const status = one("status");
 
@@ -261,6 +327,9 @@ async function AdminList({
       language: one("language"),
       talent: one("talent") as TalentType | undefined,
       tier: one("tier") as never,
+      modelCategory: one("modelCategory"),
+      minHeight: positiveInt(one("minHeight")),
+      maxDayRate: positiveInt(one("maxDayRate")),
       status: (status as Status) ?? "all",
       sort: "recent",
       page: Number.isFinite(page) && page > 0 ? page : 1,
@@ -272,8 +341,8 @@ async function AdminList({
   if (creators.length === 0) {
     return (
       <p className="py-20 text-center text-ink-soft">
-        No creators match. Submissions land here the moment someone completes
-        the form at <Link href="/join" className="underline">/join</Link>.
+        Nobody matches. Submissions land here the moment someone completes the
+        form at <Link href="/join" className="underline">/join</Link>.
       </p>
     );
   }
@@ -307,6 +376,9 @@ export default async function AdminPage(props: PageProps<"/admin">) {
     approved: 0,
     pending: 0,
     cities: 0,
+    influencers: 0,
+    creators: 0,
+    models: 0,
   }));
 
   const exportQs = new URLSearchParams(
@@ -332,7 +404,7 @@ export default async function AdminPage(props: PageProps<"/admin">) {
               Export CSV
             </Link>
             <Link href="/roster" className="btn btn-ghost !py-2 !text-sm">
-              Public view
+              Roster view
             </Link>
             <form action={logout}>
               <button type="submit" className="btn btn-ghost !py-2 !text-sm">
@@ -342,10 +414,11 @@ export default async function AdminPage(props: PageProps<"/admin">) {
           </div>
         </header>
 
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
           <StatTile figure={stats.total} label="total profiles" />
           <StatTile figure={stats.pending} label="awaiting review" />
           <StatTile figure={stats.approved} label="live on roster" />
+          <StatTile figure={stats.models} label="models" />
           <StatTile figure={stats.cities} label="cities" />
         </div>
 

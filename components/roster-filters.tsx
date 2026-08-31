@@ -2,12 +2,27 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState, useTransition } from "react";
-import { CITIES, GENRES, LANGUAGES, TIERS } from "@/lib/taxonomy";
+import {
+  CITIES,
+  GENRES,
+  LANGUAGES,
+  MODEL_CATEGORIES,
+  TIERS,
+} from "@/lib/taxonomy";
 
 const TALENT_TABS = [
   { value: "", label: "Everyone" },
   { value: "influencer", label: "Influencers" },
-  { value: "ugc_creator", label: "UGC creators" },
+  { value: "creator", label: "Creators" },
+  { value: "model", label: "Models" },
+] as const;
+
+/** Casting filters on height, so the bands are the ones a brief is written in. */
+const HEIGHT_BANDS = [
+  { value: "165", label: "165cm and up" },
+  { value: "170", label: "170cm and up" },
+  { value: "175", label: "175cm and up" },
+  { value: "180", label: "180cm and up" },
 ] as const;
 
 export function RosterFilters({ basePath = "/roster" }: { basePath?: string }) {
@@ -31,12 +46,19 @@ export function RosterFilters({ basePath = "/roster" }: { basePath?: string }) {
       const next = new URLSearchParams(params.toString());
       if (value) next.set(key, value);
       else next.delete(key);
-      // Switching to UGC hides the reach filters, so it has to drop them too -
+      // Switching tab hides some filters, so it has to drop them too -
       // otherwise a tier left over from the influencer view keeps filtering
       // invisibly and the roster looks empty for no stated reason.
-      if (key === "talent" && value === "ugc_creator") {
-        next.delete("tier");
-        next.delete("maxReelRate");
+      if (key === "talent") {
+        if (value === "creator" || value === "model") {
+          next.delete("tier");
+          next.delete("maxReelRate");
+        }
+        if (value !== "model") {
+          next.delete("modelCategory");
+          next.delete("minHeight");
+          next.delete("maxDayRate");
+        }
       }
       push(next);
     },
@@ -58,15 +80,21 @@ export function RosterFilters({ basePath = "/roster" }: { basePath?: string }) {
     "city",
     "language",
     "maxReelRate",
+    "modelCategory",
+    "minHeight",
+    "maxDayRate",
     "q",
   ].filter((k) => params.get(k)).length;
 
   const talent = params.get("talent") ?? "";
 
   // Follower tier and a reel budget are properties of selling reach. With the
-  // roster switched to UGC only they would filter every result to nothing, so
-  // they come off the bar entirely rather than sitting there returning zero.
-  const showReachFilters = talent !== "ugc_creator";
+  // roster switched to creators or models only they would filter every result to
+  // nothing, so they come off the bar entirely rather than sitting there
+  // returning zero. The casting filters appear only on the models tab for the
+  // same reason, in reverse.
+  const showReachFilters = talent !== "creator" && talent !== "model";
+  const showModelFilters = talent === "model";
 
   const selectCls =
     "field !py-2 !text-sm !w-auto min-w-0 cursor-pointer appearance-none pr-8 " +
@@ -171,6 +199,49 @@ export function RosterFilters({ basePath = "/roster" }: { basePath?: string }) {
             <option value="50000">Reel under ₹50K</option>
             <option value="100000">Reel under ₹1L</option>
           </select>
+        )}
+
+        {showModelFilters && (
+          <>
+            <select
+              value={params.get("modelCategory") ?? ""}
+              onChange={(e) => set("modelCategory", e.target.value)}
+              aria-label="Filter by what they are cast for"
+              className={selectCls}
+            >
+              <option value="">Cast for anything</option>
+              {MODEL_CATEGORIES.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+
+            <select
+              value={params.get("minHeight") ?? ""}
+              onChange={(e) => set("minHeight", e.target.value)}
+              aria-label="Filter by minimum height"
+              className={selectCls}
+            >
+              <option value="">Any height</option>
+              {HEIGHT_BANDS.map((h) => (
+                <option key={h.value} value={h.value}>
+                  {h.label}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={params.get("maxDayRate") ?? ""}
+              onChange={(e) => set("maxDayRate", e.target.value)}
+              aria-label="Filter by maximum day rate"
+              className={selectCls}
+            >
+              <option value="">Any day rate</option>
+              <option value="10000">Day under ₹10K</option>
+              <option value="25000">Day under ₹25K</option>
+              <option value="50000">Day under ₹50K</option>
+              <option value="100000">Day under ₹1L</option>
+            </select>
+          </>
         )}
 
         <select

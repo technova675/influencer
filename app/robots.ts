@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
       // The roster is the agency's asset and the admin surface is internal.
-      disallow: ["/admin", "/api/"],
+      disallow: ["/admin", "/roster", "/api/"],
     },
     sitemap: `${base}/sitemap.xml`,
   };
