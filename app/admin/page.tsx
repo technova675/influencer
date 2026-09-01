@@ -36,8 +36,8 @@ const STATUS_STYLES: Record<Status, string> = {
 function StatTile({ figure, label }: { figure: number | string; label: string }) {
   return (
     <div className="card p-5">
-      <div className="stat-figure tabular text-3xl">{figure}</div>
-      <div className="mt-1.5 text-sm text-ink-soft">{label}</div>
+      <div className="stat-figure text-3xl">{figure}</div>
+      <div className="overline mt-1.5">{label}</div>
     </div>
   );
 }
@@ -51,7 +51,7 @@ function AdminRow({ creator }: { creator: CreatorRow }) {
   return (
     <details className="card overflow-hidden">
       <summary className="flex cursor-pointer list-none items-center gap-3.5 p-4 transition-colors hover:bg-black/[0.02]">
-        <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full bg-accent-soft ring-1 ring-black/5">
+        <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full bg-accent-soft ring-1 ring-black/10">
           {photo ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={photo} alt="" className="h-full w-full object-cover" />
@@ -273,7 +273,7 @@ function AdminRow({ creator }: { creator: CreatorRow }) {
             {!creator.is_verified && (
               <form action={markVerified}>
                 <input type="hidden" name="id" value={creator.id} />
-                <button type="submit" className="btn btn-ghost !py-2 !text-sm">
+                <button type="submit" className="btn btn-ghost !py-2 !text-xs">
                   Mark figures verified
                 </button>
               </form>
@@ -349,7 +349,7 @@ async function AdminList({
 
   return (
     <>
-      <p className="mt-6 text-sm text-ink-faint">
+      <p className="mono mt-6 text-xs uppercase tracking-[0.09em] text-ink-faint">
         <span className="tabular font-medium text-ink">{total}</span> total
       </p>
       <div className="mt-4 space-y-2.5">
@@ -399,15 +399,15 @@ export default async function AdminPage(props: PageProps<"/admin">) {
             <Link
               href={`/admin/export?${exportQs}`}
               prefetch={false}
-              className="btn btn-ghost !py-2 !text-sm"
+              className="btn btn-ghost !py-2 !text-xs"
             >
               Export CSV
             </Link>
-            <Link href="/roster" className="btn btn-ghost !py-2 !text-sm">
+            <Link href="/roster" className="btn btn-ghost !py-2 !text-xs">
               Roster view
             </Link>
             <form action={logout}>
-              <button type="submit" className="btn btn-ghost !py-2 !text-sm">
+              <button type="submit" className="btn btn-ghost !py-2 !text-xs">
                 Sign out
               </button>
             </form>

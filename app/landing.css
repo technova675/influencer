@@ -1,0 +1,243 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+/* ===========================================================================
+   The landing page, reproduced from the supplied reference.
+
+   Every declaration and every value below is verbatim. The only edit is to the
+   SELECTORS: each one is prefixed with `#adbibe`, and the reference's `body`
+   rule is applied to that wrapper instead.
+
+   That prefix is not cosmetic. The reference is a standalone document, so it
+   styles bare elements - `*`, `section`, `h1`, `h2`, `footer` - and reuses
+   class names this app already defines for other things (`.btn`, `.chip`,
+   `.display`, `.spec-row`, `.tick`). Dropped into a shared stylesheet those
+   rules would restyle the role pages, the join form and the admin, and
+   `section{padding:88px 0}` alone would wreck every other page on the site.
+   The prefix confines all of it to this one page and, being an id, outranks
+   both Tailwind and globals.css without needing a single `!important`.
+   =========================================================================== */
+
+#adbibe{
+  --ink:#12141C;
+  --paper:#F1F2ED;
+  --paper-2:#E7E8E1;
+  --line:#D2D3CB;
+  --muted:#6B6E63;
+  --signal:#3355FF;
+  --result:#C6FF3D;
+  --result-ink:#1B2400;
+  --radius:2px;
+}
+#adbibe *{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+#adbibe{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Inter',sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+#adbibe .mono{font-family:'IBM Plex Mono',monospace;}
+#adbibe .display{font-family:'Space Grotesk',sans-serif;}
+#adbibe a{color:inherit;text-decoration:none;}
+#adbibe img{max-width:100%;display:block;}
+#adbibe .wrap{max-width:1120px;margin:0 auto;padding:0 24px;}
+@media (prefers-reduced-motion: reduce){
+  #adbibe *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important;}
+}
+
+/* ---------- header ---------- */
+#adbibe header{
+  border-bottom:1px solid var(--line);
+  position:sticky; top:0; background:var(--paper);
+  z-index:50;
+}
+#adbibe .header-inner{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 24px; max-width:1120px; margin:0 auto;
+}
+#adbibe .brand{display:flex; align-items:center; gap:10px;}
+#adbibe .brand-mark{
+  width:26px; height:26px; background:var(--ink);
+  display:flex; align-items:center; justify-content:center;
+  border-radius:var(--radius);
+}
+#adbibe .brand-mark span{color:var(--result); font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500;}
+#adbibe .brand-name{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; letter-spacing:-0.01em;}
+#adbibe .brand-sub{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em;}
+#adbibe nav.links{display:flex; gap:28px; font-size:13px; font-weight:500;}
+#adbibe nav.links a{color:var(--muted); transition:color .15s;}
+#adbibe nav.links a:hover, #adbibe nav.links a:focus-visible{color:var(--ink);}
+#adbibe .cta-mini{
+  font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500;
+  border:1px solid var(--ink); padding:8px 14px; border-radius:var(--radius);
+  transition:background .15s, color .15s;
+}
+#adbibe .cta-mini:hover, #adbibe .cta-mini:focus-visible{background:var(--ink); color:var(--paper);}
+@media (max-width:820px){ #adbibe nav.links{display:none;} }
+
+/* ---------- hero ---------- */
+#adbibe .hero{padding:72px 0 0;}
+#adbibe .eyebrow{
+  font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:10px;
+  margin-bottom:22px;
+}
+#adbibe .eyebrow::before{content:''; width:7px; height:7px; background:var(--result); border-radius:50%; display:inline-block;}
+#adbibe h1{
+  font-family:'Space Grotesk',sans-serif; font-weight:600;
+  font-size:clamp(38px,6.4vw,72px); line-height:1.02; letter-spacing:-0.02em;
+  max-width:900px;
+}
+#adbibe h1 em{font-style:normal; color:var(--signal);}
+#adbibe .hero-sub{
+  margin-top:24px; font-size:17px; line-height:1.55; color:var(--muted);
+  max-width:520px;
+}
+#adbibe .hero-ctas{display:flex; gap:12px; margin-top:32px; flex-wrap:wrap;}
+#adbibe .btn{
+  font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500;
+  padding:13px 22px; border-radius:var(--radius); border:1px solid var(--ink);
+  display:inline-flex; align-items:center; gap:8px;
+  transition:transform .12s ease, background .15s, color .15s;
+}
+#adbibe .btn-primary{background:var(--ink); color:var(--paper);}
+#adbibe .btn-primary:hover, #adbibe .btn-primary:focus-visible{transform:translateY(-1px);}
+#adbibe .btn-ghost:hover, #adbibe .btn-ghost:focus-visible{background:var(--ink); color:var(--paper);}
+
+/* ---------- ticker: signature element ---------- */
+#adbibe .ticker-wrap{
+  margin-top:60px; border-top:1px solid var(--ink); border-bottom:1px solid var(--ink);
+  background:var(--ink); overflow:hidden; position:relative;
+}
+#adbibe .ticker-track{
+  display:flex; gap:0; white-space:nowrap;
+  animation:scroll 34s linear infinite;
+  width:max-content;
+}
+#adbibe .ticker-wrap:hover .ticker-track{animation-play-state:paused;}
+@keyframes scroll{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
+#adbibe .tick{
+  font-family:'IBM Plex Mono',monospace; font-size:13px; color:#CFD1C7;
+  padding:14px 28px; display:flex; align-items:center; gap:10px;
+  border-right:1px solid #2A2D38;
+}
+#adbibe .tick b{color:var(--result); font-weight:500;}
+#adbibe .tick .up::before{content:'▲ '; color:var(--result); font-size:10px;}
+
+/* ---------- stats ---------- */
+#adbibe .stats{
+  display:grid; grid-template-columns:repeat(4,1fr);
+  border-bottom:1px solid var(--line);
+}
+#adbibe .stat{
+  padding:28px 24px; border-right:1px solid var(--line);
+}
+#adbibe .stat:last-child{border-right:none;}
+#adbibe .stat .num{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:30px;}
+#adbibe .stat .lbl{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-top:4px;}
+@media (max-width:700px){ #adbibe .stats{grid-template-columns:repeat(2,1fr);} #adbibe .stat{border-bottom:1px solid var(--line);} }
+
+/* ---------- section shared ---------- */
+#adbibe section{padding:88px 0;}
+#adbibe .section-head{display:flex; justify-content:space-between; align-items:flex-end; gap:24px; margin-bottom:44px; flex-wrap:wrap;}
+#adbibe .section-tag{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;}
+#adbibe h2{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(26px,3.4vw,38px); letter-spacing:-0.01em; max-width:560px;}
+#adbibe .section-note{font-size:14px; color:var(--muted); max-width:340px; line-height:1.5;}
+
+/* ---------- two lanes ---------- */
+#adbibe .lanes{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border:1px solid var(--line);}
+#adbibe .lane{background:var(--paper); padding:36px 32px;}
+#adbibe .lane-kicker{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--signal); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;}
+#adbibe .lane h3{font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:600; margin-bottom:16px;}
+#adbibe .spec-row{display:flex; justify-content:space-between; padding:11px 0; border-top:1px solid var(--line); font-size:13.5px;}
+#adbibe .spec-row:first-of-type{border-top:none;}
+#adbibe .spec-row .k{color:var(--muted);}
+#adbibe .spec-row .v{font-weight:500; text-align:right; max-width:56%;}
+#adbibe .lane .btn{margin-top:24px; width:100%; justify-content:center;}
+@media (max-width:760px){ #adbibe .lanes{grid-template-columns:1fr;} }
+
+/* ---------- roster ledger ---------- */
+#adbibe .filter-bar{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:28px;}
+#adbibe .chip{
+  font-family:'IBM Plex Mono',monospace; font-size:12px; padding:8px 14px;
+  border:1px solid var(--line); border-radius:20px; color:var(--muted);
+  background:var(--paper);
+}
+#adbibe .chip.active{border-color:var(--ink); color:var(--ink); background:var(--paper-2); font-weight:500;}
+
+#adbibe .ledger{border:1px solid var(--line);}
+#adbibe .ledger-head, #adbibe .row{
+  display:grid;
+  grid-template-columns:2.4fr 1fr 1fr 1fr 1fr 0.9fr;
+  gap:12px; align-items:center;
+}
+#adbibe .ledger-head{
+  padding:12px 20px; border-bottom:1px solid var(--ink); background:var(--paper-2);
+  font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase;
+  letter-spacing:0.05em; color:var(--muted);
+}
+#adbibe .row{
+  padding:18px 20px; border-bottom:1px solid var(--line);
+  transition:background .12s;
+}
+#adbibe .row:last-child{border-bottom:none;}
+#adbibe .row:hover{background:var(--paper-2);}
+#adbibe .who{display:flex; align-items:center; gap:12px;}
+#adbibe .avatar{
+  width:40px; height:40px; border-radius:50%; background:var(--ink); color:var(--result);
+  display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif;
+  font-size:14px; font-weight:600; flex-shrink:0;
+}
+#adbibe .who-name{font-weight:600; font-size:14.5px;}
+#adbibe .who-genre{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); margin-top:2px;}
+#adbibe .cell-lbl{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted); text-transform:uppercase; display:none;}
+#adbibe .cell-val{font-family:'IBM Plex Mono',monospace; font-size:13px;}
+#adbibe .cell-val.pos{color:#3E7D00;}
+#adbibe .tag{
+  font-family:'IBM Plex Mono',monospace; font-size:10.5px; padding:3px 8px; border-radius:20px;
+  background:var(--result); color:var(--result-ink); font-weight:500; display:inline-block;
+}
+#adbibe .tag.ugc{background:#DCE0FF; color:var(--signal);}
+#adbibe .row-cta{
+  font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--signal); font-weight:500;
+  justify-self:end;
+}
+@media (max-width:820px){
+  #adbibe .ledger-head{display:none;}
+  #adbibe .row{grid-template-columns:1fr; gap:6px; padding:18px 18px;}
+  #adbibe .cell-lbl{display:inline;}
+  #adbibe .cell{display:flex; justify-content:space-between; padding:3px 0;}
+  #adbibe .row-cta{justify-self:start; margin-top:8px;}
+}
+
+/* ---------- genre grid ---------- */
+#adbibe .genres{display:flex; flex-wrap:wrap; gap:10px;}
+#adbibe .genre-pill{
+  font-size:13.5px; padding:11px 18px; border:1px solid var(--line); border-radius:var(--radius);
+  transition:border-color .15s, background .15s;
+}
+#adbibe .genre-pill:hover, #adbibe .genre-pill:focus-visible{border-color:var(--ink); background:var(--paper-2);}
+
+/* ---------- how scored ---------- */
+#adbibe .score-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line);}
+#adbibe .score-card{background:var(--paper); padding:30px 26px;}
+#adbibe .score-idx{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--signal); margin-bottom:14px;}
+#adbibe .score-card h4{font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:600; margin-bottom:10px;}
+#adbibe .score-card p{font-size:13.5px; color:var(--muted); line-height:1.55;}
+@media (max-width:760px){ #adbibe .score-grid{grid-template-columns:1fr;} }
+
+/* ---------- final cta ---------- */
+#adbibe .final{background:var(--ink); color:var(--paper); text-align:left;}
+#adbibe .final h2{color:var(--paper); max-width:640px;}
+#adbibe .final .section-note{color:#A6A8A0;}
+#adbibe .final .btn-primary{background:var(--result); color:var(--result-ink); border-color:var(--result);}
+#adbibe .final .btn-ghost{border-color:#42454F; color:var(--paper);}
+#adbibe .final .btn-ghost:hover{background:var(--paper); color:var(--ink);}
+
+/* ---------- footer ---------- */
+#adbibe footer{border-top:1px solid var(--line); padding:36px 0; font-size:13px; color:var(--muted);}
+#adbibe .footer-inner{display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px;}
+#adbibe footer a{color:var(--ink); font-weight:500;}
+#adbibe .foot-links{display:flex; gap:20px; flex-wrap:wrap;}
+
+#adbibe :focus-visible{outline:2px solid var(--signal); outline-offset:2px;}

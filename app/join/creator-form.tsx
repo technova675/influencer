@@ -159,7 +159,7 @@ function StepHead({
   return (
     <div className="mb-7">
       <p className="overline">
-        Step {step - FIRST_STEP + 1} of {VISIBLE_STEPS}
+        Step {String(step - FIRST_STEP + 1).padStart(2, "0")} / {VISIBLE_STEPS}
       </p>
       <h2 className="display-sm mt-2.5 text-2xl sm:text-3xl">{title}</h2>
       <p className="measure mt-2.5 text-sm leading-relaxed text-ink-soft">
@@ -175,7 +175,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="btn btn-accent !py-3.5 text-base disabled:opacity-60 sm:!px-10"
+      className="btn btn-accent !py-3.5 !text-sm disabled:opacity-60 sm:!px-10"
     >
       {pending ? "Submitting…" : "Add me to the roster"}
     </button>
@@ -256,7 +256,10 @@ export function CreatorForm({ role }: { role: Role }) {
   if (state.ok) {
     return (
       <div className="card mx-auto max-w-xl p-10 text-center">
-        <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-accent-soft">
+        <div
+          className="mx-auto grid h-14 w-14 place-items-center bg-accent-soft"
+          style={{ borderRadius: "var(--radius)" }}
+        >
           <svg viewBox="0 0 24 24" className="h-7 w-7 text-accent" aria-hidden>
             <path
               fill="none"
@@ -902,7 +905,7 @@ export function CreatorForm({ role }: { role: Role }) {
       {state.message && !state.ok && (
         <p
           role="alert"
-          className="mt-5 rounded-[var(--radius)] bg-[#fdecea] px-4 py-3 text-sm text-[#8c2018]"
+          className="mt-5 rounded-[var(--radius)] border border-[#e2b4ae] bg-[#fdecea] px-4 py-3 text-sm text-[#8c2018]"
         >
           {state.message}
         </p>

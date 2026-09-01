@@ -24,21 +24,41 @@ export function SiteNav({
   const talent = roleById(role ?? null);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line/60 bg-[color-mix(in_srgb,var(--ground-1)_85%,transparent)] backdrop-blur-md">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5 sm:px-8">
-        <Link href="/" className="display-sm text-lg tracking-tight">
-          Callsheet
+    <header className="sticky top-0 z-50 border-b border-line bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] backdrop-blur-md">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3 sm:px-8">
+        {/* The mark carries the one flash of the payoff colour that appears on
+            paper anywhere on the site - it survives there because it sits on
+            the ink square, not on the ground. */}
+        <Link href="/" className="flex items-center gap-2.5">
+          <span
+            className="grid h-[26px] w-[26px] shrink-0 place-items-center bg-ink text-[13px] text-result"
+            style={{ borderRadius: "var(--radius)" }}
+            aria-hidden
+          >
+            <span className="mono">a/</span>
+          </span>
+          <span>
+            <span className="display-sm block text-[15px] leading-none">
+              Adbibe
+            </span>
+            <span className="overline block text-[9px] leading-none mt-1">
+              {talent ? talent.plural : "Creator Network"}
+            </span>
+          </span>
         </Link>
 
         {variant === "bare" ? null : talent ? (
           <div className="flex items-center gap-1 sm:gap-3">
-            <span className="hidden text-sm text-ink-faint sm:inline">
-              {talent.plural}
-            </span>
+            <Link
+              href={`${talent.slug}#how`}
+              className="mono hidden px-3 py-2 text-xs text-ink-faint transition-colors hover:text-ink sm:inline-flex"
+            >
+              How it works
+            </Link>
             <form action={clearRole}>
               <button
                 type="submit"
-                className="rounded-full px-3 py-2 text-sm text-ink-soft transition-colors hover:text-ink"
+                className="mono px-3 py-2 text-xs text-ink-faint transition-colors hover:text-ink"
               >
                 Not a{talent.id === "influencer" ? "n" : ""}{" "}
                 {talent.label.toLowerCase()}?
@@ -46,7 +66,7 @@ export function SiteNav({
             </form>
             <Link
               href={`/join?role=${talent.id}`}
-              className="btn btn-primary !px-4 !py-2 !text-sm"
+              className="btn btn-primary !px-4 !py-2 !text-xs"
             >
               Apply
             </Link>
@@ -57,19 +77,19 @@ export function SiteNav({
           <div className="flex items-center gap-1 sm:gap-2">
             <Link
               href="/for-brands#how"
-              className="hidden rounded-full px-3 py-2 text-sm text-ink-soft transition-colors hover:text-ink sm:inline-flex"
+              className="mono hidden px-3 py-2 text-xs text-ink-faint transition-colors hover:text-ink sm:inline-flex"
             >
               How it works
             </Link>
             <form action={clearRole}>
               <button
                 type="submit"
-                className="rounded-full px-3 py-2 text-sm text-ink-soft transition-colors hover:text-ink"
+                className="mono px-3 py-2 text-xs text-ink-faint transition-colors hover:text-ink"
               >
                 I&rsquo;m talent
               </button>
             </form>
-            <Link href="/for-brands#brief" className="btn btn-primary !px-4 !py-2 !text-sm">
+            <Link href="/for-brands#brief" className="btn btn-primary !px-4 !py-2 !text-xs">
               Send a brief
             </Link>
           </div>
@@ -86,11 +106,11 @@ export function SiteFooter({ role }: { role?: RoleId | "brand" } = {}) {
     <footer className="ground-5 border-t border-line">
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-3 sm:px-8">
         <div>
-          <div className="display-sm text-lg">Callsheet</div>
+          <div className="display-sm text-lg">Adbibe</div>
           <p className="measure mt-2.5 text-sm leading-relaxed text-ink-soft">
             {talent
               ? talent.sells
-              : "A call sheet is the list a production sends the night before a shoot — who's booked, when, and for how much. Same idea: influencers, creators and models, filtered against your brief."}
+              : "Creator Network is part of Adbibe's influencer marketing line — influencers, creators and models, filtered against your brief."}
           </p>
         </div>
 
@@ -149,7 +169,7 @@ export function SiteFooter({ role }: { role?: RoleId | "brand" } = {}) {
       </div>
 
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 border-t border-line px-5 py-6 text-xs text-ink-faint sm:px-8">
-        <span>© {new Date().getFullYear()} Callsheet</span>
+        <span>© {new Date().getFullYear()} Adbibe</span>
         {!talent && (
           <span className="hidden sm:inline">
             {ROLE_LIST.map((r) => r.plural).join(" · ")}

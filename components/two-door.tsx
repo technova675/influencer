@@ -1,8 +1,12 @@
 /**
- * Influencer vs creator vs model, side by side. This is the distinction
- * the roster, the cards and the join form all turn on, so it gets stated once,
- * plainly, rather than being left for a visitor to infer from the listings -
- * which they now cannot do anyway, because the roster is private.
+ * Influencer vs creator vs model, side by side, set as three line items rather
+ * than three cards.
+ *
+ * This is the distinction the roster, the cards and the join form all turn on,
+ * so it gets stated once, plainly, rather than being left for a visitor to
+ * infer from the listings - which they now cannot do anyway, because the roster
+ * is private. Every column answers the same four questions in the same order,
+ * which is the only way a comparison is a comparison and not three pitches.
  */
 export function TalentExplainer({
   counts,
@@ -17,7 +21,7 @@ export function TalentExplainer({
       count: counts?.influencers,
       rows: [
         ["Who posts it", "They do, on their own channel"],
-        ["What you're buying", "Reach, engagement, trust"],
+        ["You're buying", "Reach, engagement, trust"],
         ["Priced by", "Placement — per reel, story, post"],
         ["Shortlist on", "Followers, engagement rate, audience city"],
       ],
@@ -29,7 +33,7 @@ export function TalentExplainer({
       count: counts?.creators,
       rows: [
         ["Who posts it", "You do, as your own ad"],
-        ["What you're buying", "The content itself, with usage rights"],
+        ["You're buying", "The content itself, with usage rights"],
         ["Priced by", "Deliverable — per video, per turnaround"],
         ["Shortlist on", "Craft, formats, samples, speed"],
       ],
@@ -41,7 +45,7 @@ export function TalentExplainer({
       count: counts?.models,
       rows: [
         ["Who posts it", "You do — they're in the shoot, not the caption"],
-        ["What you're buying", "Their time on set, plus the buyout"],
+        ["You're buying", "Their time on set, plus the buyout"],
         ["Priced by", "Half day, full day, usage"],
         ["Shortlist on", "Digitals, measurements, casting, availability"],
       ],
@@ -49,27 +53,30 @@ export function TalentExplainer({
   ];
 
   return (
-    <div className="grid gap-5 md:grid-cols-3">
-      {columns.map((c) => (
-        <div key={c.key} className="card reveal flex flex-col p-6 sm:p-8">
-          <div className="flex items-center justify-between gap-3">
-            <span className={`badge-talent badge-talent--${c.key}`}>
-              {c.label}
-            </span>
+    <div className="ledger md:grid-cols-3">
+      {columns.map((c, i) => (
+        <div key={c.key} className="reveal flex flex-col p-6 sm:p-8">
+          <p
+            className="overline"
+            style={{ color: `var(--${c.key})` }}
+          >
+            Lane {String(i + 1).padStart(2, "0")} — {c.label}
+          </p>
+
+          <div className="mt-3 flex items-start justify-between gap-3">
+            <h3 className="display-sm text-lg sm:text-xl">{c.line}</h3>
             {c.count != null && c.count > 0 && (
-              <span className="tabular text-sm text-ink-faint">
-                {c.count} on the roster
+              <span className="tabular shrink-0 text-xs text-ink-faint">
+                {c.count} live
               </span>
             )}
           </div>
 
-          <h3 className="display-sm mt-4 text-xl sm:text-2xl">{c.line}</h3>
-
-          <dl className="mt-6 space-y-3.5 border-t border-line pt-5 text-sm">
+          <dl className="mt-6 border-t border-line pt-1">
             {c.rows.map(([k, v]) => (
-              <div key={k} className="grid gap-1 sm:grid-cols-[9.5rem_1fr] sm:gap-4">
-                <dt className="text-ink-faint">{k}</dt>
-                <dd className="text-ink-soft">{v}</dd>
+              <div key={k} className="spec-row">
+                <dt>{k}</dt>
+                <dd>{v}</dd>
               </div>
             ))}
           </dl>

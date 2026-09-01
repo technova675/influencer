@@ -91,7 +91,7 @@ async function Results({ filters }: { filters: Filters }) {
 
   return (
     <>
-      <p className="mt-7 text-sm text-ink-faint">
+      <p className="mono mt-7 text-xs uppercase tracking-[0.09em] text-ink-faint">
         <span className="tabular font-medium text-ink">{total}</span>{" "}
         {filters.talent === "creator"
           ? total === 1
@@ -121,8 +121,8 @@ async function Results({ filters }: { filters: Filters }) {
           <PageLink filters={filters} page={page - 1} disabled={page <= 1}>
             Previous
           </PageLink>
-          <span className="tabular text-sm text-ink-soft">
-            {page} of {pageCount}
+          <span className="tabular text-xs text-ink-soft">
+            {page} / {pageCount}
           </span>
           <PageLink filters={filters} page={page + 1} disabled={page >= pageCount}>
             Next
@@ -169,7 +169,7 @@ function Skeletons() {
   return (
     <div className="mt-13 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="card h-64 animate-pulse bg-black/[0.03]" />
+        <div key={i} className="card h-64 animate-pulse bg-black/[0.04]" />
       ))}
     </div>
   );
@@ -190,7 +190,7 @@ function Gate() {
         <div className="mx-auto grid max-w-4xl items-start gap-12 md:grid-cols-2">
           <div>
             <p className="overline">Private</p>
-            <h1 className="display mt-4 text-[clamp(2rem,5vw,3rem)]">
+            <h1 className="display mt-5 text-[clamp(2rem,5vw,3rem)]">
               The roster isn&rsquo;t public.
             </h1>
             <p className="measure mt-5 leading-relaxed text-ink-soft">
@@ -241,8 +241,14 @@ export default async function RosterPage(props: PageProps<"/roster">) {
       <main className="ground-2 flex-1 px-5 pb-20 sm:px-8">
         <div className="mx-auto max-w-6xl">
           <header className="py-12 sm:py-16">
-            <p className="overline">Internal</p>
-            <h1 className="display mt-4 text-[clamp(2.25rem,6vw,3.75rem)]">
+            <p className="overline flex items-center gap-2.5">
+              <span
+                className="inline-block h-[7px] w-[7px] shrink-0 bg-signal"
+                aria-hidden
+              />
+              Internal
+            </p>
+            <h1 className="display mt-5 text-[clamp(2.25rem,6vw,3.75rem)]">
               The roster
             </h1>
             <p className="measure mt-5 leading-relaxed text-ink-soft">

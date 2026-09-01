@@ -1,7 +1,7 @@
-# Callsheet
+# Adbibe
 
-A call sheet is the document a production sends the night before a shoot: who is
-booked, when, where, and for how much. This is that, as a product.
+Adbibe's Creator Network: a roster of talent carrying the numbers a media buyer
+already buys on - engagement rate, cost per deliverable, turnaround, day rate.
 
 Influencers, creators and models each apply through their own page. Everything
 lands in one Supabase database, and the agency filters it against a client brief

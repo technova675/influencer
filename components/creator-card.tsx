@@ -41,7 +41,7 @@ function Avatar({
   const url = anonymous ? null : publicMediaUrl(creator.profile_photo_path);
   return (
     <div
-      className="grid shrink-0 place-items-center overflow-hidden rounded-full bg-accent-soft ring-1 ring-black/5"
+      className="grid shrink-0 place-items-center overflow-hidden rounded-full bg-accent-soft ring-1 ring-black/10"
       style={{ width: size, height: size }}
     >
       {url ? (
@@ -66,8 +66,8 @@ function Avatar({
 function Metric({ value, label }: { value: string; label: string }) {
   return (
     <div className="min-w-0">
-      <div className="stat-figure tabular text-xl leading-none">{value}</div>
-      <div className="mt-1.5 truncate text-xs text-ink-faint">{label}</div>
+      <div className="stat-figure text-xl leading-none">{value}</div>
+      <div className="overline mt-1.5 truncate">{label}</div>
     </div>
   );
 }
@@ -160,7 +160,7 @@ export function CreatorCard({
     redacted ? rateBand(n) : formatRupees(n);
 
   return (
-    <article className="card group flex flex-col p-5 transition-shadow duration-300 hover:shadow-[var(--shadow-lg)] sm:p-6">
+    <article className="card group flex flex-col p-5 hover:border-ink sm:p-6">
       {showsWork(creator.talent_type) && !redacted && (
         <Showcase creator={creator} />
       )}

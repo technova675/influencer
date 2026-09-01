@@ -1,56 +1,82 @@
 @import "tailwindcss";
 
 /* ===========================================================================
-   Design tokens
-   Serif display + Inter body, warm off-white grounds that shift per section.
-   One accent. No pure black, no pure white.
+   Design tokens - "media plan", not "mood board".
+
+   The whole visual argument of this site is that talent should be read the way
+   a media buyer reads any other line item, so the page is built like a
+   terminal: paper ground, hairline rules instead of shadows, a 2px radius that
+   reads as a printed edge rather than a card, and every number set in mono so
+   figures line up down a column and can be compared at a glance.
+
+   Three typefaces, each with one job:
+     Space Grotesk - headlines and figures. The only voice.
+     Inter         - running prose.
+     IBM Plex Mono - labels, metrics, rates, buttons. Anything measured.
    =========================================================================== */
 
 :root {
-  --ground: #f4f4f2;
-  --ground-raised: #ffffff;
-  --ink: #16161a;
-  --ink-soft: #55555f;
-  --ink-faint: #8c8c96;
-  --line: #e2e2dd;
-  --accent: #1e40ff;
-  --accent-soft: #e8ecff;
+  --paper: #f1f2ed;
+  --paper-2: #e7e8e1;
+  --ground: var(--paper);
+  --ground-raised: #f8f8f5;
+  --ink: #12141c;
+  --ink-soft: #4a4d57;
+  --ink-faint: #6b6e63;
+  --line: #d2d3cb;
+  --line-strong: #b9bab1;
+
+  /* Signal is the interactive colour; result is the payoff colour, and is only
+     ever used on the ink ground where it has the contrast to earn it. */
+  --signal: #3355ff;
+  --signal-soft: #dce0ff;
+  --result: #c6ff3d;
+  --result-ink: #1b2400;
+
+  --accent: var(--signal);
+  --accent-soft: var(--signal-soft);
   --accent-ink: #ffffff;
 
   /* One colour per side of the marketplace. The pairing is the whole point:
-     a reader should be able to tell an influencer card from a Creator card from a
-     model card across the room, before reading a single word of it. */
-  --influencer: #1e40ff;
-  --influencer-soft: #e8ecff;
-  --creator: #b8531c;
-  --creator-soft: #fdeee2;
-  --model: #146b5c;
-  --model-soft: #e2f3ef;
+     a reader should be able to tell an influencer row from a creator row from a
+     model row across the room, before reading a single word of it. */
+  --influencer: #3355ff;
+  --influencer-soft: #dce0ff;
+  --creator: #b8431c;
+  --creator-soft: #fbe3d6;
+  --model: #0f6b58;
+  --model-soft: #d9efe9;
 
-  /* Section grounds, in scroll order */
-  --ground-1: #eef1fb;
-  --ground-2: #f7f7f5;
-  --ground-3: #fdf0f2;
-  --ground-4: #eef6f0;
-  --ground-5: #f2f2ef;
+  /* Section grounds. Two tones only - the break is carried by the rule between
+     sections, not by a wash of colour. */
+  --ground-1: var(--paper);
+  --ground-2: var(--paper-2);
+  --ground-3: var(--paper);
+  --ground-4: var(--paper);
+  --ground-5: var(--paper-2);
 
-  --radius: 14px;
-  --radius-lg: 22px;
+  --radius: 2px;
+  --radius-lg: 2px;
 
-  --shadow-sm: 0 1px 2px rgb(22 22 26 / 0.05), 0 1px 3px rgb(22 22 26 / 0.04);
-  --shadow-md: 0 4px 6px -1px rgb(22 22 26 / 0.06), 0 12px 28px -8px rgb(22 22 26 / 0.12);
-  --shadow-lg: 0 8px 12px -4px rgb(22 22 26 / 0.06), 0 32px 64px -16px rgb(22 22 26 / 0.16);
+  /* Shadows are near-absent by design. What was a shadow is now a rule. */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: 0 1px 0 0 var(--line-strong);
 }
 
 @theme inline {
   --color-ground: var(--ground);
   --color-raised: var(--ground-raised);
+  --color-paper-2: var(--paper-2);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-ink-faint: var(--ink-faint);
   --color-line: var(--line);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-signal: var(--signal);
+  --color-result: var(--result);
+  --color-result-ink: var(--result-ink);
   --color-influencer: var(--influencer);
   --color-influencer-soft: var(--influencer-soft);
   --color-creator: var(--creator);
@@ -59,8 +85,8 @@
   --color-model-soft: var(--model-soft);
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --font-display: var(--font-grotesk), "Space Grotesk", ui-sans-serif, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
 
   --radius-card: var(--radius);
   --radius-xl2: var(--radius-lg);
@@ -79,66 +105,78 @@ body {
   background: var(--ground);
   color: var(--ink);
   font-family: var(--font-sans);
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   text-rendering: optimizeLegibility;
 }
 
+/* The section break is a rule, not a colour change - so it survives two
+   same-toned sections landing next to each other. */
+main > section + section {
+  border-top: 1px solid var(--line);
+}
+
 /* ---------------------------------------------------------------------------
-   Type. Tracking tightens as size grows; measure capped at ~68ch.
+   Type
    --------------------------------------------------------------------------- */
 
 .display {
   font-family: var(--font-display);
-  font-weight: 400;
-  line-height: 0.98;
-  letter-spacing: -0.03em;
-  font-variation-settings: "SOFT" 0, "WONK" 1;
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
 }
 
 .display-sm {
   font-family: var(--font-display);
-  font-weight: 400;
-  line-height: 1.08;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+}
+
+.mono {
+  font-family: var(--font-mono);
 }
 
 .measure {
   max-width: 62ch;
 }
 
+/* Every label above a heading, every column header, every field caption. Mono
+   and uppercase is what makes them read as chrome rather than as copy. */
 .overline {
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-weight: 500;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--ink-faint);
 }
 
 .tabular {
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
-/* Serif stat with a dotted underline. The rule is what makes a number read as
-   evidence rather than dashboard output - so it belongs on measured figures
-   only, never on ordinals like a step number. */
+/* A measured figure - a follower count, a rate, an engagement rate. Set in the
+   display face at size so a column of them scans, with no ornament: the number
+   is the evidence and does not need underlining to say so. */
 .stat-figure {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: -0.02em;
-  border-bottom: 1.5px dotted color-mix(in srgb, var(--ink) 28%, transparent);
-  padding-bottom: 0.08em;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Serif numerals with no rule - ordinals, step markers, counters. */
+/* Ordinals, step markers, counters. Mono, because they are indices, not
+   measurements - and the distinction is worth keeping visible. */
 .figure-plain {
-  font-family: var(--font-display);
-  font-weight: 400;
-  letter-spacing: -0.02em;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0;
   font-variant-numeric: tabular-nums;
 }
 
 /* ---------------------------------------------------------------------------
-   Section grounds. The colour change is the section break - no borders.
+   Section grounds
    --------------------------------------------------------------------------- */
 
 .ground-1 { background: var(--ground-1); }
@@ -147,23 +185,28 @@ body {
 .ground-4 { background: var(--ground-4); }
 .ground-5 { background: var(--ground-5); }
 
-/* Soft vertical blend between adjacent grounds */
+.ground-ink {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.ground-ink .text-ink-soft,
+.ground-ink .text-ink-faint { color: #a6a8a0; }
+
 .ground-blend {
-  background-image: linear-gradient(
-    to bottom,
-    var(--from) 0%,
-    var(--to) 100%
-  );
+  background-image: linear-gradient(to bottom, var(--from) 0%, var(--to) 100%);
 }
 
 /* ---------------------------------------------------------------------------
    Components
    --------------------------------------------------------------------------- */
 
+/* A card is a ruled box on the paper, not an object floating above it. */
 .card {
   background: var(--ground-raised);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  transition: border-color 0.18s ease;
 }
 
 .btn {
@@ -171,64 +214,71 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border-radius: 999px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  font-family: var(--font-mono);
   font-weight: 500;
-  font-size: 0.9375rem;
-  padding: 0.75rem 1.5rem;
-  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.18s ease, background-color 0.18s ease, opacity 0.18s ease;
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
+  padding: 0.8125rem 1.375rem;
+  transition: transform 0.12s ease, background-color 0.15s ease,
+    color 0.15s ease, border-color 0.15s ease;
   white-space: nowrap;
 }
 
-.btn:active { transform: translateY(1px) scale(0.99); }
+.btn:active { transform: translateY(0); }
 
 .btn-primary {
   background: var(--ink);
-  color: #fff;
-  box-shadow: var(--shadow-sm);
+  color: var(--paper);
+  border-color: var(--ink);
 }
-.btn-primary:hover {
-  background: #000;
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
+.btn-primary:hover { transform: translateY(-1px); }
 
 .btn-accent {
   background: var(--accent);
   color: var(--accent-ink);
-  box-shadow: var(--shadow-sm);
+  border-color: var(--accent);
 }
-.btn-accent:hover {
-  filter: brightness(1.08);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
+.btn-accent:hover { transform: translateY(-1px); filter: brightness(1.06); }
 
 .btn-ghost {
-  background: var(--ground-raised);
+  background: transparent;
   color: var(--ink);
-  border: 1px solid var(--line);
+  border-color: var(--ink);
 }
-.btn-ghost:hover {
-  border-color: color-mix(in srgb, var(--ink) 22%, transparent);
-  transform: translateY(-1px);
+.btn-ghost:hover { background: var(--ink); color: var(--paper); }
+
+/* On the ink ground the payoff colour finally has the contrast to be used. */
+.ground-ink .btn-primary {
+  background: var(--result);
+  color: var(--result-ink);
+  border-color: var(--result);
 }
+.ground-ink .btn-ghost {
+  border-color: #42454f;
+  color: var(--paper);
+}
+.ground-ink .btn-ghost:hover { background: var(--paper); color: var(--ink); }
 
 .pill {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
   border-radius: 999px;
-  padding: 0.3125rem 0.6875rem;
-  font-size: 0.8125rem;
-  line-height: 1.2;
-  background: color-mix(in srgb, var(--ink) 5%, transparent);
+  padding: 0.25rem 0.625rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  border: 1px solid var(--line);
+  background: transparent;
   color: var(--ink-soft);
   white-space: nowrap;
 }
 
 .pill-accent {
   background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
   color: var(--accent);
   font-weight: 500;
 }
@@ -237,7 +287,7 @@ body {
 .field {
   width: 100%;
   background: var(--ground-raised);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius);
   padding: 0.6875rem 0.875rem;
   font-size: 0.9375rem;
@@ -250,18 +300,20 @@ body {
 .field:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .field[aria-invalid="true"] {
   border-color: #c0392b;
-  box-shadow: 0 0 0 3px rgb(192 57 43 / 0.1);
+  box-shadow: 0 0 0 2px rgb(192 57 43 / 0.16);
 }
 
 .label {
   display: block;
-  font-size: 0.8125rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
   font-weight: 500;
+  letter-spacing: 0.03em;
   color: var(--ink-soft);
   margin-bottom: 0.4375rem;
 }
@@ -272,25 +324,27 @@ body {
   align-items: center;
   border-radius: 999px;
   padding: 0.4375rem 0.875rem;
-  font-size: 0.875rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
   border: 1px solid var(--line);
-  background: var(--ground-raised);
-  color: var(--ink-soft);
+  background: transparent;
+  color: var(--ink-faint);
   cursor: pointer;
   user-select: none;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease,
+    color 0.15s ease;
 }
 
-.chip:hover { border-color: color-mix(in srgb, var(--ink) 25%, transparent); }
+.chip:hover { border-color: var(--ink); color: var(--ink); }
 
 .chip:has(input:checked) {
   background: var(--ink);
   border-color: var(--ink);
-  color: #fff;
+  color: var(--paper);
 }
 
 .chip:has(input:focus-visible) {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .chip input {
@@ -301,11 +355,117 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
+   The ticker. The signature element, and a working one: it carries the live
+   shape of the roster - what a genre currently costs, what it engages at, how
+   fast it turns around - so the pitch is made in numbers before a single
+   paragraph is read.
+   --------------------------------------------------------------------------- */
+
+.ticker-wrap {
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  background: var(--ink);
+  overflow: hidden;
+}
+
+.ticker-track {
+  display: flex;
+  white-space: nowrap;
+  width: max-content;
+  animation: ticker-scroll 38s linear infinite;
+}
+
+.ticker-wrap:hover .ticker-track { animation-play-state: paused; }
+
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.tick {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.875rem 1.75rem;
+  border-right: 1px solid #2a2d38;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: #cfd1c7;
+}
+
+.tick b {
+  font-weight: 500;
+  color: var(--result);
+}
+
+.tick-up::before {
+  content: "\25B2\00a0";
+  font-size: 0.625rem;
+  color: var(--result);
+}
+
+/* ---------------------------------------------------------------------------
+   The stat band. Figures in a ruled row, the way a plan summary is set.
+   --------------------------------------------------------------------------- */
+
+.stat-band {
+  display: grid;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.stat-band > * {
+  padding: 1.625rem 1.5rem;
+  border-right: 1px solid var(--line);
+}
+
+.stat-band > *:last-child { border-right: none; }
+
+@media (max-width: 700px) {
+  .stat-band > * { border-bottom: 1px solid var(--line); }
+}
+
+/* ---------------------------------------------------------------------------
+   The ledger. A grid of hairlines with no gaps - used wherever a set of things
+   is meant to be compared rather than browsed.
+   --------------------------------------------------------------------------- */
+
+.ledger {
+  display: grid;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.ledger > * {
+  background: var(--paper);
+}
+
+/* A row of specification: label left, value right, ruled between. Used on the
+   lane comparison and anywhere a fact needs a name next to it. */
+.spec-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.6875rem 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.8438rem;
+}
+
+.spec-row:first-of-type { border-top: none; }
+.spec-row dt, .spec-row .k { color: var(--ink-faint); }
+.spec-row dd, .spec-row .v {
+  font-weight: 500;
+  text-align: right;
+  max-width: 58%;
+}
+
+/* ---------------------------------------------------------------------------
    Motion. Scroll reveal, honouring reduced-motion.
    --------------------------------------------------------------------------- */
 
 @keyframes rise {
-  from { opacity: 0; transform: translateY(18px); }
+  from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: none; }
 }
 
@@ -322,11 +482,11 @@ body {
 
 html.js-reveal .reveal:not(.is-visible) {
   opacity: 0;
-  transform: translateY(18px);
+  transform: translateY(14px);
 }
 
 html.js-reveal .reveal.is-visible {
-  animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -337,6 +497,8 @@ html.js-reveal .reveal.is-visible {
     opacity: 1;
     transform: none;
   }
+  .ticker-track,
+  .marquee-track { animation: none; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
@@ -357,15 +519,11 @@ html.js-reveal .reveal.is-visible {
 
 .marquee:hover .marquee-track { animation-play-state: paused; }
 
-@media (prefers-reduced-motion: reduce) {
-  .marquee-track { animation: none; }
-}
-
 /* Focus ring, applied consistently */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--signal);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 /* Scrollbar, desktop only */
@@ -373,29 +531,30 @@ html.js-reveal .reveal.is-visible {
   ::-webkit-scrollbar { width: 11px; height: 11px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--ink) 16%, transparent);
-    border-radius: 999px;
+    background: color-mix(in srgb, var(--ink) 20%, transparent);
     border: 3px solid var(--ground);
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: color-mix(in srgb, var(--ink) 28%, transparent);
+    background: color-mix(in srgb, var(--ink) 34%, transparent);
   }
 }
 
 /* ---------------------------------------------------------------------------
    Talent type. The one distinction the whole site turns on, so it gets its own
-   badge treatment rather than reusing the generic pill.
+   treatment rather than reusing the generic pill: a squared mono tag, read as
+   a column value rather than as decoration.
    --------------------------------------------------------------------------- */
 
 .badge-talent {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  border-radius: 999px;
-  padding: 0.25rem 0.625rem;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  border-radius: var(--radius);
+  padding: 0.1875rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.6563rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   white-space: nowrap;
   border: 1px solid transparent;
@@ -404,63 +563,66 @@ html.js-reveal .reveal.is-visible {
 .badge-talent--influencer {
   background: var(--influencer-soft);
   color: var(--influencer);
-  border-color: color-mix(in srgb, var(--influencer) 18%, transparent);
+  border-color: color-mix(in srgb, var(--influencer) 22%, transparent);
 }
 
 .badge-talent--creator {
   background: var(--creator-soft);
   color: var(--creator);
-  border-color: color-mix(in srgb, var(--creator) 20%, transparent);
+  border-color: color-mix(in srgb, var(--creator) 24%, transparent);
 }
 
 .badge-talent--model {
   background: var(--model-soft);
   color: var(--model);
-  border-color: color-mix(in srgb, var(--model) 20%, transparent);
+  border-color: color-mix(in srgb, var(--model) 24%, transparent);
 }
 
 /* "Both" reads as neither colour rather than a muddy blend of the two. */
 .badge-talent--both {
-  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
   color: var(--ink);
-  border-color: color-mix(in srgb, var(--ink) 14%, transparent);
+  border-color: color-mix(in srgb, var(--ink) 18%, transparent);
 }
 
 /* ---------------------------------------------------------------------------
-   Segmented control. Used for the roster's Influencers / Creator switch and for
-   the form's talent-type question, so the same choice looks the same in both
-   places.
+   Segmented control. Used for the roster's talent switch and for the form's
+   talent-type question, so the same choice looks the same in both places.
    --------------------------------------------------------------------------- */
 
 .segmented {
   display: inline-flex;
-  padding: 0.25rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--ink) 6%, transparent);
-  border: 1px solid var(--line);
+  padding: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  overflow: hidden;
 }
 
 .segmented > * {
-  border-radius: 999px;
-  padding: 0.4375rem 1rem;
-  font-size: 0.875rem;
+  border-radius: 0;
+  border-right: 1px solid var(--line);
+  padding: 0.5rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
   font-weight: 500;
-  color: var(--ink-soft);
+  color: var(--ink-faint);
   white-space: nowrap;
-  transition: background-color 0.18s ease, color 0.18s ease,
-    box-shadow 0.18s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
+.segmented > *:last-child { border-right: none; }
 .segmented > *:hover { color: var(--ink); }
 
 .segmented > [data-active="true"] {
-  background: var(--ground-raised);
-  color: var(--ink);
-  box-shadow: var(--shadow-sm);
+  background: var(--ink);
+  color: var(--paper);
 }
 
 /* ---------------------------------------------------------------------------
-   The two-door choice. A card big enough to be a decision, not a link.
+   The door / lane. A card big enough to be a decision, not a link. Squared off,
+   with the role colour as a rule across the top - the one place colour is
+   allowed to identify something at a distance.
    --------------------------------------------------------------------------- */
 
 .door {
@@ -468,17 +630,16 @@ html.js-reveal .reveal.is-visible {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   background: var(--ground-raised);
   border: 1px solid var(--line);
-  padding: 2rem;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.25s ease, border-color 0.25s ease;
+  padding: 1.75rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 @media (min-width: 640px) {
-  .door { padding: 2.5rem; }
+  .door { padding: 2.25rem; }
 }
 
 .door::before {
@@ -490,46 +651,45 @@ html.js-reveal .reveal.is-visible {
 }
 
 .door:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-  border-color: color-mix(in srgb, var(--door-accent, var(--ink)) 35%, transparent);
+  transform: translateY(-2px);
+  border-color: var(--door-accent, var(--ink));
+  background: var(--paper-2);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .door:hover { transform: none; }
 }
 
-/* Large-format serif choice card used inside the join form */
+/* Large-format choice card used inside the join form */
 .choice {
   display: block;
   position: relative;
-  border-radius: var(--radius-lg);
-  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
   background: var(--ground-raised);
   padding: 1.25rem 1.25rem 1.25rem 3.25rem;
   cursor: pointer;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease,
-    background-color 0.18s ease;
+  transition: border-color 0.18s ease, background-color 0.18s ease;
 }
 
-.choice:hover { border-color: color-mix(in srgb, var(--ink) 25%, transparent); }
+.choice:hover { border-color: var(--ink); }
 
 .choice::before {
   content: "";
   position: absolute;
   left: 1.25rem;
   top: 1.5rem;
-  width: 1.125rem;
-  height: 1.125rem;
+  width: 1rem;
+  height: 1rem;
   border-radius: 999px;
-  border: 1.5px solid color-mix(in srgb, var(--ink) 30%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--ink) 34%, transparent);
   background: var(--ground-raised);
   transition: all 0.18s ease;
 }
 
 .choice:has(input:checked) {
   border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 4%, var(--ground-raised));
+  background: color-mix(in srgb, var(--accent) 5%, var(--ground-raised));
 }
 
 .choice:has(input:checked)::before {
@@ -538,7 +698,7 @@ html.js-reveal .reveal.is-visible {
 }
 
 .choice:has(input:focus-visible) {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .choice input {
@@ -554,15 +714,13 @@ html.js-reveal .reveal.is-visible {
 
 .rail {
   height: 3px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  background: color-mix(in srgb, var(--ink) 10%, transparent);
   overflow: hidden;
 }
 
 .rail > span {
   display: block;
   height: 100%;
-  border-radius: 999px;
   background: var(--accent);
   transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
