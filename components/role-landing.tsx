@@ -1,20 +1,28 @@
 import Link from "next/link";
 import { SiteFooter, SiteNav } from "@/components/site-nav";
+import { Ticker } from "@/components/ticker";
 import type { Role } from "@/lib/roles";
 
 /**
  * One role's landing page.
  *
  * Every page rendered through here talks to exactly one kind of person: its own
- * colour, its own hero, its own list of what gets you shortlisted, its own
- * questions. Nothing on the page mentions the other two roles, because somebody
- * who came here to be booked as a model does not need to be sold on content work.
+ * colour, its own hero, its own ticker of going rates, its own list of what
+ * gets you shortlisted, its own questions. Nothing on the page mentions the
+ * other two roles, because somebody who came here to be booked as a model does
+ * not need to be sold on content work.
  *
  * The structure is shared so the three pages feel like one company; every word
- * in them comes from lib/roles.ts, so they read as three different pitches.
+ * and every figure in them comes from lib/roles.ts, so they read as three
+ * different pitches quoted in three different units - per placement, per video,
+ * per day.
  */
 export function RoleLanding({ role }: { role: Role }) {
   const accent = { "--role": role.accent } as React.CSSProperties;
+  const roleBtn = {
+    background: "var(--role)",
+    borderColor: "var(--role)",
+  } as React.CSSProperties;
 
   return (
     <div style={accent}>
@@ -22,37 +30,44 @@ export function RoleLanding({ role }: { role: Role }) {
 
       <main className="flex-1">
         {/* ---------------------------------------------------- hero ----- */}
-        <section className={`${role.ground} px-5 pt-16 pb-20 sm:px-8 sm:pt-24 sm:pb-24`}>
-          <div className="mx-auto max-w-4xl text-center">
+        <section className={role.ground}>
+          <div className="mx-auto max-w-6xl px-5 pt-16 pb-14 sm:px-8 sm:pt-24 sm:pb-20">
             <p
-              className="overline reveal"
+              className="overline reveal flex items-center gap-2.5"
               style={{ color: "var(--role)" }}
             >
+              <span
+                className="inline-block h-[7px] w-[7px] shrink-0"
+                style={{ background: "var(--role)" }}
+                aria-hidden
+              />
               {role.hero.overline}
             </p>
-            <h1 className="display reveal mt-5 text-[clamp(2.5rem,7vw,4.5rem)]">
+
+            <h1 className="display reveal mt-6 max-w-4xl text-[clamp(2.5rem,7vw,4.5rem)]">
               {role.hero.title[0]}
               <br />
               {role.hero.title[1]}
             </h1>
-            <p className="measure reveal mx-auto mt-6 leading-relaxed text-ink-soft sm:text-lg">
+
+            <p className="measure reveal mt-6 leading-relaxed text-ink-soft sm:text-lg">
               {role.hero.lede}
             </p>
 
-            <div className="reveal mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="reveal mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 href={`/join?role=${role.id}`}
                 className="btn btn-accent w-full sm:w-auto"
-                style={{ background: "var(--role)", borderColor: "var(--role)" }}
+                style={roleBtn}
               >
-                {role.hero.cta}
+                {role.hero.cta} &rarr;
               </Link>
               <Link href="#how" className="btn btn-ghost w-full sm:w-auto">
                 How it works
               </Link>
             </div>
 
-            <ul className="reveal mx-auto mt-8 flex max-w-2xl flex-col items-center gap-2 text-sm text-ink-faint sm:flex-row sm:justify-center sm:gap-6">
+            <ul className="reveal mt-8 flex flex-col gap-2 text-sm text-ink-faint sm:flex-row sm:gap-7">
               {role.hero.assurances.map((a) => (
                 <li key={a} className="flex items-center gap-2">
                   <Tick />
@@ -61,28 +76,69 @@ export function RoleLanding({ role }: { role: Role }) {
               ))}
             </ul>
           </div>
+
+          {/* What this role currently goes for, in this role's own units. The
+              numbers land before the argument does. */}
+          <div className="reveal">
+            <Ticker
+              items={role.ticker}
+              label={`Indicative ${role.label.toLowerCase()} rates by category`}
+            />
+          </div>
         </section>
 
-        {/* -------------------------------------- what you're selling ---- */}
+        {/* ------------------------------------------- the line item ----- */}
         <section className="ground-2 px-5 py-20 sm:px-8 sm:py-24">
-          <div className="mx-auto max-w-6xl">
-            <div className="reveal mx-auto max-w-2xl text-center">
+          <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1fr_1fr] lg:gap-16">
+            <div className="reveal">
               <p className="overline">What gets you booked</p>
-              <h2 className="display-sm mt-4 text-[clamp(1.75rem,4vw,2.75rem)]">
+              <h2 className="display-sm mt-4 text-[clamp(1.75rem,4vw,2.5rem)]">
                 {role.sells}
               </h2>
             </div>
 
-            <div className="mt-12 grid gap-5 md:grid-cols-3">
+            {/* The same four rows on all three role pages. A brand reads this
+                as a line item; the person reading it sees exactly what they
+                are being bought for, with nothing implied. */}
+            <div className="card reveal p-6 sm:p-8">
+              <p
+                className="overline mb-5"
+                style={{ color: "var(--role)" }}
+              >
+                The line item &mdash; {role.label}
+              </p>
+              <dl>
+                {role.lineItem.map((r) => (
+                  <div key={r.k} className="spec-row">
+                    <dt>{r.k}</dt>
+                    <dd>{r.v}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </div>
+        </section>
+
+        {/* -------------------------------------- what you're selling ---- */}
+        <section className="ground-1 px-5 py-20 sm:px-8 sm:py-24">
+          <div className="mx-auto max-w-6xl">
+            <div className="reveal max-w-2xl">
+              <p className="overline">Scored on three things</p>
+              <h2 className="display-sm mt-4 text-[clamp(1.75rem,4vw,2.5rem)]">
+                What a shortlist is actually decided on
+              </h2>
+            </div>
+
+            <div className="ledger reveal mt-11 md:grid-cols-3">
               {role.shortlistedOn.map((s, i) => (
-                <div key={s.label} className="card reveal flex flex-col p-6 sm:p-7">
+                <div key={s.label} className="flex flex-col p-7 sm:p-8">
                   <span
-                    className="figure-plain text-2xl"
+                    className="figure-plain text-xs"
                     style={{ color: "var(--role)" }}
                   >
-                    {String(i + 1).padStart(2, "0")}
+                    {String(i + 1).padStart(2, "0")} / {role.label}
                   </span>
-                  <h3 className="display-sm mt-4 text-xl">{s.label}</h3>
+                  <h3 className="display-sm mt-4 text-lg">{s.label}</h3>
                   <p className="mt-3 text-sm leading-relaxed text-ink-soft">
                     {s.detail}
                   </p>
@@ -94,24 +150,24 @@ export function RoleLanding({ role }: { role: Role }) {
 
         {/* ------------------------------------------------ how it works -- */}
         <section id="how" className="ground-5 px-5 py-20 sm:px-8 sm:py-28">
-          <div className="mx-auto max-w-5xl">
-            <div className="reveal mx-auto max-w-2xl text-center">
+          <div className="mx-auto max-w-6xl">
+            <div className="reveal max-w-2xl">
               <p className="overline">Start to booked</p>
-              <h2 className="display-sm mt-4 text-[clamp(1.75rem,4vw,2.75rem)]">
+              <h2 className="display-sm mt-4 text-[clamp(1.75rem,4vw,2.5rem)]">
                 Three steps, and you&rsquo;re on it
               </h2>
             </div>
 
-            <ol className="mt-14 grid gap-10 md:grid-cols-3">
+            <ol className="ledger reveal mt-11 md:grid-cols-3">
               {role.steps.map((s) => (
-                <li key={s.n} className="reveal">
+                <li key={s.n} className="p-7 sm:p-8">
                   <span
-                    className="figure-plain text-3xl"
+                    className="figure-plain text-xs"
                     style={{ color: "var(--role)" }}
                   >
-                    {s.n}
+                    Step {s.n}
                   </span>
-                  <h3 className="display-sm mt-4 text-xl">{s.t}</h3>
+                  <h3 className="display-sm mt-4 text-lg">{s.t}</h3>
                   <p className="mt-3 text-sm leading-relaxed text-ink-soft">
                     {s.d}
                   </p>
@@ -121,7 +177,7 @@ export function RoleLanding({ role }: { role: Role }) {
 
             {/* Telling somebody what the form asks for before they open it is
                 the single cheapest way to stop half-finished applications. */}
-            <div className="card reveal mt-14 p-7 sm:p-9">
+            <div className="card reveal mt-8 p-7 sm:p-9">
               <p className="overline">Before you start</p>
               <h3 className="display-sm mt-3 text-xl">
                 Have these to hand and it takes about five minutes
@@ -144,21 +200,22 @@ export function RoleLanding({ role }: { role: Role }) {
         </section>
 
         {/* -------------------------------------------------------- faq --- */}
-        <section id="faq" className="ground-2 px-5 py-20 sm:px-8 sm:py-24">
+        <section id="faq" className="ground-1 px-5 py-20 sm:px-8 sm:py-24">
           <div className="mx-auto max-w-3xl">
-            <h2 className="display-sm reveal text-center text-[clamp(1.75rem,4vw,2.75rem)]">
+            <p className="overline reveal">Questions</p>
+            <h2 className="display-sm reveal mt-4 text-[clamp(1.75rem,4vw,2.5rem)]">
               Straight answers
             </h2>
-            <div className="mt-11 space-y-3">
+            <div className="ledger reveal mt-10">
               {role.faqs.map((f) => (
-                <details key={f.q} className="card reveal group p-5 sm:p-6">
+                <details key={f.q} className="group p-5 sm:p-6">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
                     <span className="font-medium">{f.q}</span>
-                    <span className="shrink-0 text-ink-faint transition-transform duration-200 group-open:rotate-45">
+                    <span className="mono shrink-0 text-ink-faint transition-transform duration-200 group-open:rotate-45">
                       +
                     </span>
                   </summary>
-                  <p className="mt-3.5 text-sm leading-relaxed text-ink-soft">
+                  <p className="measure mt-3.5 text-sm leading-relaxed text-ink-soft">
                     {f.a}
                   </p>
                 </details>
@@ -168,24 +225,27 @@ export function RoleLanding({ role }: { role: Role }) {
         </section>
 
         {/* ------------------------------------------------------ close --- */}
-        <section className={`${role.ground} px-5 py-24 sm:px-8 sm:py-32`}>
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="display reveal text-[clamp(2rem,5.5vw,3.25rem)]">
-              {role.hero.title[0]}
-              <br />
-              {role.hero.title[1]}
+        <section className="ground-ink px-5 py-24 sm:px-8 sm:py-28">
+          <div className="mx-auto max-w-6xl">
+            <p className="overline reveal" style={{ color: "#a6a8a0" }}>
+              {role.plural}
+            </p>
+            <h2 className="display reveal mt-5 max-w-3xl text-[clamp(2rem,5.5vw,3.25rem)]">
+              {role.hero.title[0]} {role.hero.title[1]}
             </h2>
-            <div className="reveal mt-9">
+            <div className="reveal mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
                 href={`/join?role=${role.id}`}
-                className="btn btn-accent"
-                style={{ background: "var(--role)", borderColor: "var(--role)" }}
+                className="btn btn-primary w-full sm:w-auto"
               >
-                {role.hero.cta}
+                {role.hero.cta} &rarr;
+              </Link>
+              <Link href="/for-brands" className="btn btn-ghost w-full sm:w-auto">
+                I&rsquo;m hiring, not applying
               </Link>
             </div>
-            <p className="reveal mt-5 text-xs text-ink-faint">
-              {role.hero.assurances.join(" · ")}
+            <p className="mono reveal mt-6 text-xs" style={{ color: "#a6a8a0" }}>
+              {role.hero.assurances.join("  ·  ")}
             </p>
           </div>
         </section>

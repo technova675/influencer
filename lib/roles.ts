@@ -35,6 +35,20 @@ export type Role = {
   };
   /** What this role is actually selling, said in one line. */
   sells: string;
+  /**
+   * The running band of figures under the hero. Indicative market rates for
+   * this role, not roster averages - they are here to set expectations before
+   * somebody opens the form, and they are quoted in this role's own units:
+   * per placement for an influencer, per video for a creator, per day for a
+   * model.
+   */
+  ticker: { label: string; value: string }[];
+  /**
+   * The line item, as a media plan would set it out. Four rows, same four
+   * questions for all three roles, so the reader can hold them against each
+   * other even though they only ever see one at a time.
+   */
+  lineItem: { k: string; v: string }[];
   /** The fields that decide whether they get shortlisted. */
   shortlistedOn: { label: string; detail: string }[];
   /** What the form will ask for, so nobody starts it blind. */
@@ -64,6 +78,22 @@ export const ROLES: Record<RoleId, Role> = {
       ],
     },
     sells: "You sell access to your audience. The post goes out on your channel, in your voice.",
+    ticker: [
+      { label: "FASHION", value: "4.2% ER · ₹12K/reel" },
+      { label: "FITNESS", value: "6.1% ER · ₹9K/post" },
+      { label: "FOOD", value: "3.8% ER · ₹22K/reel" },
+      { label: "TECH", value: "6.4% ER · ₹9K/post" },
+      { label: "FINANCE", value: "7.2% ER · ₹8K/post" },
+      { label: "COMEDY", value: "4.4% ER · ₹30K/reel" },
+      { label: "TRAVEL", value: "5.0% ER · ₹15K/reel" },
+      { label: "BEAUTY", value: "4.9% ER · ₹18K/reel" },
+    ],
+    lineItem: [
+      { k: "You sell", v: "Audience, trust, distribution" },
+      { k: "Priced by", v: "Placement — per reel, story, post" },
+      { k: "Shortlisted on", v: "Followers, engagement rate, audience city" },
+      { k: "Reports into", v: "Reach and awareness KPIs" },
+    ],
     shortlistedOn: [
       {
         label: "Reach and engagement",
@@ -141,6 +171,22 @@ export const ROLES: Record<RoleId, Role> = {
     },
     sells:
       "You sell the footage, not a following. The brand posts it on their own channels and pays for the content and its usage rights.",
+    ticker: [
+      { label: "BEAUTY", value: "₹5K/video · 48h turnaround" },
+      { label: "UNBOXING", value: "₹6K/video · 72h turnaround" },
+      { label: "FITNESS", value: "₹6K/video · 5-day turnaround" },
+      { label: "TRAVEL", value: "₹7K/video · 72h turnaround" },
+      { label: "TALKING HEAD", value: "₹4K/video · 48h turnaround" },
+      { label: "PRODUCT DEMO", value: "₹8K/video · 5-day turnaround" },
+      { label: "VOICEOVER", value: "₹3K/video · 24h turnaround" },
+      { label: "FOOD", value: "₹7K/video · 4-day turnaround" },
+    ],
+    lineItem: [
+      { k: "You sell", v: "Raw footage plus usage rights" },
+      { k: "Priced by", v: "Deliverable — per video, per turnaround" },
+      { k: "Shortlisted on", v: "Craft, format, samples, speed" },
+      { k: "Reports into", v: "Paid and programmatic creative pipeline" },
+    ],
     shortlistedOn: [
       {
         label: "Your samples",
@@ -218,6 +264,22 @@ export const ROLES: Record<RoleId, Role> = {
     },
     sells:
       "You sell the day, and the buyout that goes with it. You're in the shoot, not in the caption.",
+    ticker: [
+      { label: "CAMPAIGN", value: "₹25K/day · 12-month buyout" },
+      { label: "CATALOGUE", value: "₹12K/day · digital only" },
+      { label: "EDITORIAL", value: "₹8K/day · credit + usage" },
+      { label: "RUNWAY", value: "₹15K/show · fittings paid" },
+      { label: "COMMERCIAL", value: "₹30K/day · TVC buyout" },
+      { label: "BEAUTY", value: "₹18K/day · 6-month print" },
+      { label: "BRIDAL", value: "₹20K/day · regional OOH" },
+      { label: "FITNESS", value: "₹14K/day · social only" },
+    ],
+    lineItem: [
+      { k: "You sell", v: "Your time on set, plus the buyout" },
+      { k: "Priced by", v: "Half day, full day, usage" },
+      { k: "Shortlisted on", v: "Digitals, height, casting, availability" },
+      { k: "Reports into", v: "Production and casting budgets" },
+    ],
     shortlistedOn: [
       {
         label: "Your digitals",

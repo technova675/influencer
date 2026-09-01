@@ -91,7 +91,7 @@ export function ProfilePhotoUpload({ error }: { error?: string }) {
       <input type="hidden" name="profile_photo_path" value={file?.key ?? ""} />
 
       <div className="flex items-center gap-3">
-        <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full bg-accent-soft ring-1 ring-black/5">
+        <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full bg-accent-soft ring-1 ring-black/10">
           {file?.url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={file.url} alt="" className="h-full w-full object-cover" />
@@ -126,7 +126,7 @@ export function ProfilePhotoUpload({ error }: { error?: string }) {
             </p>
           )}
           {pct !== null && (
-            <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-black/10">
+            <div className="mt-2 h-1 w-full overflow-hidden bg-black/10">
               <div
                 className="h-full bg-accent transition-[width] duration-200"
                 style={{ width: `${pct}%` }}
@@ -198,7 +198,7 @@ export function ShowcaseUpload() {
         <ul className="mb-3 grid grid-cols-3 gap-2.5 sm:grid-cols-4">
           {files.map((f) => (
             <li key={f.key} className="group relative">
-              <div className="aspect-square overflow-hidden rounded-[var(--radius)] bg-black/5 ring-1 ring-black/5">
+              <div className="aspect-square overflow-hidden rounded-[var(--radius)] bg-black/5 ring-1 ring-black/10">
                 {isVideoKey(f.key) ? (
                   <div className="grid h-full place-items-center">
                     <svg viewBox="0 0 24 24" className="h-7 w-7 text-ink-faint" aria-hidden>
@@ -245,7 +245,7 @@ export function ShowcaseUpload() {
       </button>
 
       {pct !== null && (
-        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-black/10">
+        <div className="mt-2 h-1 w-full overflow-hidden bg-black/10">
           <div
             className="h-full bg-accent transition-[width] duration-200"
             style={{ width: `${pct}%` }}

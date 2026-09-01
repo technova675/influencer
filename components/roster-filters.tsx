@@ -97,13 +97,13 @@ export function RosterFilters({ basePath = "/roster" }: { basePath?: string }) {
   const showModelFilters = talent === "model";
 
   const selectCls =
-    "field !py-2 !text-sm !w-auto min-w-0 cursor-pointer appearance-none pr-8 " +
-    "bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 12 12%22><path fill=%22%238c8c96%22 d=%22M6 8L2 4h8z%22/></svg>')] " +
+    "field !py-1.5 !text-xs !w-auto min-w-0 cursor-pointer appearance-none pr-8 font-mono " +
+    "bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 12 12%22><path fill=%22%236b6e63%22 d=%22M6 8L2 4h8z%22/></svg>')] " +
     "bg-[length:12px] bg-[right_0.6rem_center] bg-no-repeat";
 
   return (
     <div
-      className="sticky top-[57px] z-40 -mx-5 border-b border-line/70 bg-[color-mix(in_srgb,var(--ground-2)_92%,transparent)] px-5 py-3.5 backdrop-blur-md sm:-mx-8 sm:px-8"
+      className="sticky top-[57px] z-40 -mx-5 border-y border-line bg-[color-mix(in_srgb,var(--paper-2)_94%,transparent)] px-5 py-3.5 backdrop-blur-md sm:-mx-8 sm:px-8"
       data-pending={pending || undefined}
     >
       <div className="mx-auto max-w-6xl">
@@ -128,7 +128,7 @@ export function RosterFilters({ basePath = "/roster" }: { basePath?: string }) {
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search name, handle, city…"
           aria-label="Search creators"
-          className="field !py-2 !text-sm w-full sm:w-64"
+          className="field !py-1.5 !text-xs w-full font-mono sm:w-64"
         />
 
         <select

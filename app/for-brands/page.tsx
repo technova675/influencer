@@ -3,6 +3,8 @@ import Link from "next/link";
 import { SiteFooter, SiteNav } from "@/components/site-nav";
 import { CreatorCard } from "@/components/creator-card";
 import { TalentExplainer } from "@/components/two-door";
+import { Ticker } from "@/components/ticker";
+import { ROLE_LIST } from "@/lib/roles";
 import { fetchCreators, fetchStats } from "@/lib/queries";
 
 export const revalidate = 300;
@@ -38,14 +40,17 @@ const STEPS = [
 
 const DIFFERENTIATORS = [
   {
+    n: "Verify",
     t: "Reviewed, not scraped",
     d: "Nothing is public until a talent manager approves it. Self-reported numbers are held separately from verified ones, so a shortlist is never built on a guess.",
   },
   {
+    n: "Benchmark",
     t: "Rates upfront, in rupees",
     d: "Per reel, per story, per post, per Video. You know the budget fits before you write the first email.",
   },
   {
+    n: "Track",
     t: "Filters that match the brief",
     d: "City, language and tier are first-class filters, because that is how a brief is actually written.",
   },
@@ -73,47 +78,70 @@ export default async function ForBrandsPage() {
 
       <main className="flex-1">
         {/* ---------------- Hero ---------------- */}
-        <section className="ground-1 px-5 pt-16 pb-20 sm:px-8 sm:pt-24 sm:pb-24">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="overline reveal">For brands and agencies</p>
-            <h1 className="display reveal mt-5 text-[clamp(2.5rem,7vw,4.5rem)]">
-              Find the right creator
-              <br />
-              in minutes.
-            </h1>
-            <p className="measure reveal mx-auto mt-6 text-base leading-relaxed text-ink-soft sm:text-lg">
-              A reviewed roster of influencers, creators and models.
-              Filtered by genre, tier, city, language, casting and budget, and
-              back to you as a shortlist the same day — not a spreadsheet three
-              days later.
+        <section className="ground-1">
+          <div className="mx-auto max-w-6xl px-5 pt-16 pb-14 sm:px-8 sm:pt-24 sm:pb-16">
+            <p className="overline reveal flex items-center gap-2.5">
+              <span
+                className="inline-block h-[7px] w-[7px] shrink-0 bg-signal"
+                aria-hidden
+              />
+              For brands and agencies
             </p>
-            <div className="reveal mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <h1 className="display reveal mt-6 max-w-4xl text-[clamp(2.5rem,7vw,4.5rem)]">
+              Brief it like paid media.
+              <br />
+              Get the shortlist back today.
+            </h1>
+            <p className="measure reveal mt-6 text-base leading-relaxed text-ink-soft sm:text-lg">
+              A reviewed roster of influencers, creators and models — each
+              carrying the numbers you already buy on. Filter by genre, tier,
+              city, language, casting and budget, and get a shortlist the same
+              day, rates already attached.
+            </p>
+            <div className="reveal mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="#brief" className="btn btn-accent w-full sm:w-auto">
-                Send us a brief
+                Send us a brief &rarr;
               </Link>
               <Link href="#how" className="btn btn-ghost w-full sm:w-auto">
                 How it works
               </Link>
             </div>
+          </div>
 
-            <div className="reveal mt-14 grid grid-cols-3 gap-6 border-t border-line/70 pt-10">
+          {/* The three rosters quoted in their three units, running together.
+              A buyer reading this already knows which line item they need. */}
+          <div className="reveal">
+            <Ticker
+              items={ROLE_LIST.flatMap((r) => r.ticker.slice(0, 3))}
+              label="Indicative rates across influencers, creators and models"
+            />
+          </div>
+
+          <div className="mx-auto max-w-6xl px-5 sm:px-8">
+            <div className="stat-band reveal grid-cols-2 sm:grid-cols-4">
               <div>
-                <div className="stat-figure tabular text-4xl sm:text-5xl">
+                <div className="stat-figure text-3xl">
                   {stats.influencers > 0 ? stats.influencers : "—"}
                 </div>
-                <div className="mt-2 text-sm text-ink-soft">influencers</div>
+                <div className="overline mt-1.5">Influencers</div>
               </div>
               <div>
-                <div className="stat-figure tabular text-4xl sm:text-5xl">
+                <div className="stat-figure text-3xl">
                   {stats.creators > 0 ? stats.creators : "—"}
                 </div>
-                <div className="mt-2 text-sm text-ink-soft">creators</div>
+                <div className="overline mt-1.5">Creators</div>
               </div>
               <div>
-                <div className="stat-figure tabular text-4xl sm:text-5xl">
+                <div className="stat-figure text-3xl">
+                  {stats.models > 0 ? stats.models : "—"}
+                </div>
+                <div className="overline mt-1.5">Models</div>
+              </div>
+              <div>
+                <div className="stat-figure text-3xl">
                   {stats.cities > 0 ? stats.cities : "—"}
                 </div>
-                <div className="mt-2 text-sm text-ink-soft">cities</div>
+                <div className="overline mt-1.5">Cities covered</div>
               </div>
             </div>
           </div>
@@ -122,12 +150,14 @@ export default async function ForBrandsPage() {
         {/* ---------------- Which do you need ---------------- */}
         <section className="ground-2 px-5 py-20 sm:px-8 sm:py-24">
           <div className="mx-auto max-w-6xl">
-            <div className="reveal mx-auto max-w-2xl text-center">
-              <p className="overline">Before you filter</p>
-              <h2 className="display-sm mt-4 text-[clamp(1.75rem,4vw,2.75rem)]">
-                Which one does this brief need?
-              </h2>
-              <p className="measure mx-auto mt-4 leading-relaxed text-ink-soft">
+            <div className="reveal flex flex-wrap items-end justify-between gap-6">
+              <div className="max-w-xl">
+                <p className="overline">Three line items, kept separate</p>
+                <h2 className="display-sm mt-4 text-[clamp(1.75rem,4vw,2.5rem)]">
+                  Which one does this brief need?
+                </h2>
+              </div>
+              <p className="max-w-sm text-sm leading-relaxed text-ink-soft">
                 Buying reach and buying footage are two different purchases at
                 two different prices. The roster keeps them on separate tabs so
                 a comparison is always like for like.
@@ -148,13 +178,17 @@ export default async function ForBrandsPage() {
         {/* ---------------- Why this roster ---------------- */}
         <section className="ground-3 px-5 py-20 sm:px-8 sm:py-24">
           <div className="mx-auto max-w-6xl">
-            <h2 className="display-sm reveal max-w-2xl text-[clamp(1.75rem,4vw,2.75rem)]">
+            <p className="overline reveal">How the roster is scored</p>
+            <h2 className="display-sm reveal mt-4 max-w-2xl text-[clamp(1.75rem,4vw,2.5rem)]">
               Why this roster and not a spreadsheet
             </h2>
-            <div className="mt-11 grid gap-5 md:grid-cols-3">
-              {DIFFERENTIATORS.map((d) => (
-                <div key={d.t} className="card reveal p-6 sm:p-7">
-                  <h3 className="display-sm text-xl">{d.t}</h3>
+            <div className="ledger reveal mt-11 md:grid-cols-3">
+              {DIFFERENTIATORS.map((d, i) => (
+                <div key={d.t} className="p-7 sm:p-8">
+                  <span className="figure-plain text-xs text-signal">
+                    {String(i + 1).padStart(2, "0")} / {d.n}
+                  </span>
+                  <h3 className="display-sm mt-4 text-lg">{d.t}</h3>
                   <p className="mt-3 text-sm leading-relaxed text-ink-soft">
                     {d.d}
                   </p>
@@ -170,13 +204,14 @@ export default async function ForBrandsPage() {
             <div className="mx-auto max-w-6xl">
               <div className="reveal flex flex-wrap items-end justify-between gap-4">
                 <div className="max-w-2xl">
-                  <h2 className="display-sm text-[clamp(1.75rem,4vw,2.75rem)]">
+                  <p className="overline">A sample of the roster</p>
+                  <h2 className="display-sm mt-4 text-[clamp(1.75rem,4vw,2.5rem)]">
                     What a shortlist looks like
                   </h2>
                   <p className="measure mt-4 leading-relaxed text-ink-soft">
                     Reach, engagement and rate card on every influencer.
-                    Samples, turnaround and per-video price on every creator
-                    creator. Digitals, measurements and day rate on every
+                    Samples, turnaround and per-video price on every creator.
+                    Digitals, measurements and day rate on every
                     model. Full names and exact rates come with the shortlist.
                   </p>
                 </div>
@@ -196,8 +231,9 @@ export default async function ForBrandsPage() {
         {/* ---------------- How it works ---------------- */}
         <section id="how" className="ground-5 px-5 py-20 sm:px-8 sm:py-28">
           <div className="mx-auto max-w-3xl">
-            <h2 className="display-sm reveal text-center text-[clamp(1.75rem,4vw,2.75rem)]">
-              Brief in, shortlist out
+            <p className="overline reveal">Brief in, shortlist out</p>
+            <h2 className="display-sm reveal mt-4 text-[clamp(1.75rem,4vw,2.5rem)]">
+              Four steps, no demo call
             </h2>
             <ol className="mt-14 space-y-12">
               {STEPS.map((s) => (
@@ -215,25 +251,31 @@ export default async function ForBrandsPage() {
               ))}
             </ol>
 
-            <div id="brief" className="card reveal mt-16 p-7 text-center sm:p-10">
-              <p className="overline">Send a brief</p>
+            <div
+              id="brief"
+              className="ground-ink reveal mt-16 p-8 sm:p-10"
+              style={{ borderRadius: "var(--radius)" }}
+            >
+              <p className="overline" style={{ color: "#a6a8a0" }}>
+                Send a brief
+              </p>
               <h3 className="display-sm mt-3 text-2xl">
                 Tell us the campaign, get the shortlist
               </h3>
-              <p className="measure mx-auto mt-3 leading-relaxed text-ink-soft">
+              <p className="measure mt-3 leading-relaxed text-ink-soft">
                 Category, market, deliverable, timing and budget is enough to
                 start. We filter the roster against it and come back with names,
                 rates and availability — usually the same day.
               </p>
               <div className="mt-7">
                 <a
-                  href="mailto:hello@callsheet.in?subject=Campaign%20brief"
-                  className="btn btn-accent"
+                  href="mailto:hello@adbibe.com?subject=Campaign%20brief"
+                  className="btn btn-primary"
                 >
-                  Email us the brief
+                  Email us the brief &rarr;
                 </a>
               </div>
-              <p className="mt-4 text-xs text-ink-faint">
+              <p className="mono mt-5 text-xs text-ink-faint">
                 Prefer to browse yourself? The roster is private — ask us for
                 access.
               </p>

@@ -1,5 +1,5 @@
 -- ===========================================================================
--- Callsheet - database schema
+-- Adbibe - database schema
 -- Run in: Supabase Dashboard -> SQL Editor -> New query -> Run
 -- Safe to re-run.
 -- ===========================================================================
