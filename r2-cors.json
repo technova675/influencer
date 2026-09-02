@@ -1,8 +1,11 @@
 [
   {
     "AllowedOrigins": [
+      "http://localhost:3000",
       "http://localhost:3200",
-      "https://your-production-domain.vercel.app"
+      "https://influncer-rooster.netlify.app",
+      "https://houseofpawseidon.in",
+      "https://www.houseofpawseidon.in"
     ],
     "AllowedMethods": ["PUT", "GET", "HEAD"],
     "AllowedHeaders": ["content-type"],

@@ -56,12 +56,17 @@ html{scroll-behavior:smooth;}
   padding:18px 24px; max-width:1120px; margin:0 auto;
 }
 #adbibe .brand{display:flex; align-items:center; gap:10px;}
+/* The reference drew the mark as an ink square with "a/" set in it. It now
+   holds public/logo.png, which is its own artwork on its own ground - so the
+   ink background is dropped. The logo is RGBA with rounded corners, and a dark
+   fill behind it showed through as four dark wedges. Size and radius are the
+   reference's, untouched. */
 #adbibe .brand-mark{
-  width:26px; height:26px; background:var(--ink);
+  width:26px; height:26px;
   display:flex; align-items:center; justify-content:center;
   border-radius:var(--radius);
 }
-#adbibe .brand-mark span{color:var(--result); font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500;}
+#adbibe .brand-mark img{width:26px; height:26px; border-radius:var(--radius);}
 #adbibe .brand-name{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; letter-spacing:-0.01em;}
 #adbibe .brand-sub{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em;}
 #adbibe nav.links{display:flex; gap:28px; font-size:13px; font-weight:500;}

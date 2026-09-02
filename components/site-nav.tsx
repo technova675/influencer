@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { clearRole } from "@/app/actions/role";
 import { ROLE_LIST, roleById, type RoleId } from "@/lib/roles";
@@ -26,17 +27,21 @@ export function SiteNav({
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] backdrop-blur-md">
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3 sm:px-8">
-        {/* The mark carries the one flash of the payoff colour that appears on
-            paper anywhere on the site - it survives there because it sits on
-            the ink square, not on the ground. */}
+        {/* The same mark the landing page uses, at the same size, so the brand
+            does not change shape between the front door and the rest of the
+            site. `alt` is empty on purpose: the wordmark sits immediately
+            beside it, so describing the image too would make a screen reader
+            announce the brand twice. */}
         <Link href="/" className="flex items-center gap-2.5">
-          <span
-            className="grid h-[26px] w-[26px] shrink-0 place-items-center bg-ink text-[13px] text-result"
+          <Image
+            src="/logo.png"
+            alt=""
+            width={26}
+            height={26}
+            priority
+            className="h-[26px] w-[26px] shrink-0"
             style={{ borderRadius: "var(--radius)" }}
-            aria-hidden
-          >
-            <span className="mono">a/</span>
-          </span>
+          />
           <span>
             <span className="display-sm block text-[15px] leading-none">
               Adbibe

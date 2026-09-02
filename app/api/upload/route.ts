@@ -10,8 +10,9 @@ import { publicMediaUrl } from "@/lib/media";
  * a 200MB video off the function entirely.
  *
  * This endpoint is necessarily public - creators submit before they have an
- * account - so it is rate limited and the signature pins both the exact content
- * type and the exact byte length.
+ * account - so it is rate limited and the signature pins the exact content
+ * type. Byte length is not signable on a presigned PUT; it is validated here
+ * before signing and re-checked against the stored object on submit.
  */
 
 const WINDOW_MS = 60_000;
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const key = objectKey(kind, contentType);
-    const uploadUrl = await presignUpload(key, contentType, contentLength);
+    const uploadUrl = await presignUpload(key, contentType);
     return NextResponse.json(
       { uploadUrl, key, publicUrl: publicMediaUrl(key) },
       { headers: { "Cache-Control": "no-store" } },

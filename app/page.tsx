@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { LandingChips } from "@/components/landing-chips";
 import "./landing.css";
@@ -68,7 +69,9 @@ export default function LandingPage() {
       <header>
         <div className="header-inner">
           <div className="brand">
-            <div className="brand-mark"><span>a/</span></div>
+            <div className="brand-mark">
+              <Image src="/logo.png" alt="" width={26} height={26} priority />
+            </div>
             <div>
               <div className="brand-name">Adbibe</div>
               <div className="brand-sub">Creator Network</div>
@@ -76,7 +79,7 @@ export default function LandingPage() {
           </div>
           <nav className="links">
             <Link href="/for-influencers">Influencer</Link>
-            <Link href="/for-brands">For brands</Link>
+            {/* <Link href="/for-brands">For brands</Link> */}
             <Link href="/for-creators">For creators</Link>
             <a href="#scoring">How it&apos;s scored</a>
           </nav>
