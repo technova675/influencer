@@ -5,7 +5,6 @@ import { useFormStatus } from "react-dom";
 import { submitCreator, type SubmitState } from "./actions";
 import {
   AGE_BANDS,
-  CITIES,
   CONTENT_FORMATS,
   EXPERIENCE_LEVELS,
   GENRES,
@@ -16,6 +15,16 @@ import {
   sellsReach,
   type TalentType,
 } from "@/lib/taxonomy";
+import {
+  COUNTRY_CODES,
+  DEFAULT_COUNTRY,
+  dialFor,
+} from "@/lib/country-codes";
+import {
+  COUNTRY_NAMES,
+  DEFAULT_COUNTRY_NAME,
+  citiesFor,
+} from "@/lib/locations";
 import type { Role } from "@/lib/roles";
 import { ProfilePhotoUpload, ShowcaseUpload } from "@/components/media-upload";
 
@@ -71,6 +80,58 @@ function Text({
   );
 }
 
+/**
+ * Country code and number as two controls, not one text box.
+ *
+ * The code is picked, so nobody has to remember whether we want "+91", "0091"
+ * or nothing at all, and the number field is left holding only the digits a
+ * person actually knows by heart. What posts is still a single `phone` value -
+ * the two halves are joined in the hidden input, so the schema and everything
+ * downstream keep seeing one number.
+ */
+function PhoneField({ error }: { error?: string }) {
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
+  const [number, setNumber] = useState("");
+  const dial = dialFor(country);
+  const trimmed = number.trim();
+
+  return (
+    <div className="phone-field" data-invalid={error ? "true" : undefined}>
+      <select
+        name="phone_country"
+        aria-label="Country dialling code"
+        className="phone-code"
+        value={country}
+        onChange={(e) => setCountry(e.target.value)}
+      >
+        {COUNTRY_CODES.map((c) => (
+          <option key={c.iso} value={c.iso}>
+            {c.iso} {c.dial}
+          </option>
+        ))}
+      </select>
+      <input
+        id="phone"
+        type="tel"
+        inputMode="tel"
+        required
+        autoComplete="tel-national"
+        placeholder="98765 43210"
+        className="phone-number"
+        value={number}
+        onChange={(e) => setNumber(e.target.value)}
+        aria-invalid={error ? "true" : undefined}
+      />
+      {/* The only half that is submitted. */}
+      <input
+        type="hidden"
+        name="phone"
+        value={trimmed ? `${dial} ${trimmed}` : ""}
+      />
+    </div>
+  );
+}
+
 function ChipGroup({
   name,
   options,
@@ -107,6 +168,7 @@ const FIELD_STEP: Record<string, number> = {
   phone: 1,
   bio: 1,
   city: 1,
+  country: 1,
   profile_photo_path: 1,
   languages: 1,
   primary_genre: 2,
@@ -137,6 +199,110 @@ const FIELD_STEP: Record<string, number> = {
 };
 
 const STEP_COUNT = 5;
+
+/**
+ * The mandatory fields, checked in the browser.
+ *
+ * A mirror of the server schema's required rules - not a replacement for it.
+ * The schema in `lib/creator-schema.ts` is still the gate that decides what is
+ * saved; this exists so a missing answer is caught on the step it was asked on,
+ * next to the question, instead of after a round trip that lands the applicant
+ * back four steps.
+ *
+ * Keyed by the same field names the server uses, so a client message and a
+ * server message land in exactly the same slot under the field.
+ */
+type Ctx = { reach: boolean; model: boolean };
+
+const HANDLES = [
+  "instagram_handle",
+  "youtube_handle",
+  "tiktok_handle",
+  "x_handle",
+] as const;
+
+const FOLLOWER_COUNTS = [
+  "instagram_followers",
+  "youtube_subscribers",
+  "tiktok_followers",
+  "x_followers",
+] as const;
+
+/** Which other fields can satisfy a rule, so typing in any one clears it. */
+const SATISFIED_BY: Record<string, readonly string[]> = {
+  instagram_handle: [...HANDLES, "portfolio_url", "showcase_media_paths"],
+  instagram_followers: FOLLOWER_COUNTS,
+};
+
+function validateStep(
+  step: number,
+  fd: FormData,
+  { reach, model }: Ctx,
+): Record<string, string> {
+  const e: Record<string, string> = {};
+  const val = (k: string) => String(fd.get(k) ?? "").trim();
+  const many = (k: string) => fd.getAll(k).filter((v) => v !== "");
+  const num = (k: string) => Number(val(k).replace(/[,\s]/g, "")) || 0;
+
+  if (step === 1) {
+    if (val("full_name").length < 2) e.full_name = "Tell us your name";
+
+    const email = val("email");
+    if (!email) e.email = "Add your email";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))
+      e.email = "That email looks off";
+
+    // The joined "+91 98765 43210" the hidden input posts, checked against the
+    // same shape the schema accepts.
+    const phone = val("phone");
+    if (!phone) e.phone = "Add a phone number we can reach you on";
+    else if (!/^[+\d][\d\s-]{7,17}$/.test(phone))
+      e.phone = "Enter a valid phone number";
+  }
+
+  if (step === 2) {
+    if (!val("primary_genre")) e.primary_genre = "Pick your main genre";
+    if (model && many("model_categories").length === 0)
+      e.model_categories = "Pick at least one thing you get cast for";
+  }
+
+  if (step === 3) {
+    if (model && !val("height_cm"))
+      e.height_cm = "Height is what casting filters on — give it in centimetres";
+
+    const hasHandle = HANDLES.some((h) => val(h));
+    if (reach) {
+      if (!hasHandle)
+        e.instagram_handle = "Add a handle so we can see your work";
+      if (FOLLOWER_COUNTS.reduce((n, k) => n + num(k), 0) <= 0)
+        e.instagram_followers =
+          "Enter your follower count on at least one platform";
+    } else if (
+      !hasHandle &&
+      !val("portfolio_url") &&
+      many("showcase_media_paths").length === 0
+    ) {
+      e.instagram_handle =
+        "Add a handle, a portfolio link or a sample so we can see your work";
+    }
+
+    const portfolio = val("portfolio_url");
+    if (portfolio && !/^https?:\/\/[^\s.]+\.\S+$/i.test(portfolio))
+      e.portfolio_url = "Enter a full URL including https://";
+  }
+
+  return e;
+}
+
+/** Moves the applicant to the field that failed, not just to its step. */
+function focusField(form: HTMLFormElement | null, name: string) {
+  const el =
+    form?.querySelector<HTMLElement>(`#${CSS.escape(name)}`) ??
+    form?.querySelector<HTMLElement>(`[name="${name}"]`);
+  if (!el) return;
+  el.focus({ preventScroll: true });
+  el.scrollIntoView({ block: "center", behavior: "smooth" });
+}
 
 /**
  * The role is chosen on the landing page now, not in the form, so step 0 - the
@@ -200,7 +366,19 @@ export function CreatorForm({ role }: { role: Role }) {
   const type: TalentType =
     role.talentType === "influencer" && alsoContent ? "both" : role.talentType;
 
-  const err = useMemo(() => state.errors ?? {}, [state.errors]);
+  // Errors found in the browser, shown in the same slot the server's land in.
+  // A server result always wins: it is the newer answer about the same fields.
+  const [clientErr, setClientErr] = useState<Record<string, string>>({});
+  const formRef = useRef<HTMLFormElement>(null);
+  const err = useMemo(
+    () => ({ ...clientErr, ...(state.errors ?? {}) }),
+    [clientErr, state.errors],
+  );
+
+  // Country drives the city control: a curated list where we have one, a plain
+  // text box everywhere else.
+  const [country, setCountry] = useState(DEFAULT_COUNTRY_NAME);
+  const cities = citiesFor(country);
 
   const reach = sellsReach(type);
   const content = sellsContent(type);
@@ -213,6 +391,7 @@ export function CreatorForm({ role }: { role: Role }) {
   const [seenState, setSeenState] = useState(state);
   if (seenState !== state) {
     setSeenState(state);
+    setClientErr({});
     const keys = Object.keys(state.errors ?? {});
     if (keys.length > 0) {
       setStep(
@@ -235,8 +414,22 @@ export function CreatorForm({ role }: { role: Role }) {
     topRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
   }, [step]);
 
-  /** Native validation for the visible step only. */
+  const ctx = { reach, model };
+
+  /** Every mandatory answer on the visible step, then the native constraints. */
   function next() {
+    const form = formRef.current;
+    const found = form ? validateStep(step, new FormData(form), ctx) : {};
+
+    if (Object.keys(found).length > 0) {
+      setClientErr(found);
+      focusField(form, Object.keys(found)[0]);
+      return;
+    }
+    setClientErr({});
+
+    // Anything the browser knows that the rules above do not - a maxlength, a
+    // malformed email the pattern let through.
     const el = stepRefs.current[step];
     const invalid = el
       ? Array.from(
@@ -251,6 +444,53 @@ export function CreatorForm({ role }: { role: Role }) {
       return;
     }
     setStep((s) => Math.min(STEP_COUNT - 1, s + 1));
+  }
+
+  /**
+   * Submitting checks every step, not just the last one: the applicant can
+   * reach the button without ever having pressed Next on a step they skipped
+   * back from. A failure cancels the action and reopens the earliest step that
+   * is missing something.
+   */
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const found: Record<string, string> = {};
+    for (let i = FIRST_STEP; i < STEP_COUNT; i++) {
+      Object.assign(found, validateStep(i, fd, ctx));
+    }
+
+    const keys = Object.keys(found);
+    if (keys.length === 0) return;
+
+    e.preventDefault();
+    setClientErr(found);
+    const target = Math.max(
+      FIRST_STEP,
+      Math.min(...keys.map((k) => FIELD_STEP[k] ?? FIRST_STEP)),
+    );
+    setStep(target);
+    const first = keys.find((k) => (FIELD_STEP[k] ?? FIRST_STEP) === target);
+    if (first) requestAnimationFrame(() => focusField(form, first));
+  }
+
+  /**
+   * An answer clears its own error as it is typed, so a message never sits
+   * under a field that has since been filled in. `SATISFIED_BY` covers the
+   * rules one of several fields can answer - any handle clears the handle
+   * error, any follower count clears the follower one.
+   */
+  function clearErrorFor(target: EventTarget | null) {
+    const el = target as HTMLInputElement | null;
+    const name = el?.name || el?.id;
+    if (!name) return;
+    setClientErr((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(next)) {
+        if (key === name || SATISFIED_BY[key]?.includes(name)) delete next[key];
+      }
+      return Object.keys(next).length === Object.keys(prev).length ? prev : next;
+    });
   }
 
   if (state.ok) {
@@ -292,7 +532,14 @@ export function CreatorForm({ role }: { role: Role }) {
        hidden step, so native submit-time validation would block the form with
        nothing on screen to fix. Each step is validated on its way past
        instead, and the server schema is the real gate. */
-    <form action={action} noValidate>
+    <form
+      ref={formRef}
+      action={action}
+      onSubmit={handleSubmit}
+      onInput={(e) => clearErrorFor(e.target)}
+      onChange={(e) => clearErrorFor(e.target)}
+      noValidate
+    >
       <div ref={topRef} className="scroll-mt-24" />
 
       {/* Progress. Five short questions reads very differently from one long
@@ -353,14 +600,8 @@ export function CreatorForm({ role }: { role: Role }) {
                   error={err.email}
                 />
               </Field>
-              <Field label="Phone" name="phone" optional error={err.phone}>
-                <Text
-                  name="phone"
-                  type="tel"
-                  autoComplete="tel"
-                  placeholder="+91 98765 43210"
-                  error={err.phone}
-                />
+              <Field label="Phone" name="phone" error={err.phone}>
+                <PhoneField error={err.phone} />
               </Field>
             </div>
 
@@ -392,16 +633,32 @@ export function CreatorForm({ role }: { role: Role }) {
             </Field>
 
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="City" name="city" optional>
-                <select id="city" name="city" className="field">
-                  <option value="">Select a city</option>
-                  {CITIES.map((c) => (
+              <Field label="Country" name="country">
+                <select
+                  id="country"
+                  name="country"
+                  className="field"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                >
+                  {COUNTRY_NAMES.map((c) => (
                     <option key={c}>{c}</option>
                   ))}
                 </select>
               </Field>
-              <Field label="State" name="state" optional>
-                <Text name="state" placeholder="Maharashtra" />
+              {/* Keyed on the country so switching it remounts the control and
+                  drops a city that belongs to the country just left. */}
+              <Field label="City" name="city" optional key={country}>
+                {cities ? (
+                  <select id="city" name="city" className="field">
+                    <option value="">Select a city</option>
+                    {cities.map((c) => (
+                      <option key={c}>{c}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <Text name="city" placeholder="Your city" />
+                )}
               </Field>
             </div>
 

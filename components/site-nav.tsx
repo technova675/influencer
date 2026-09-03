@@ -14,13 +14,18 @@ import { ROLE_LIST, roleById, type RoleId } from "@/lib/roles";
  *
  * `variant="bare"` is the onboarding screen: no links at all, because the
  * whole page is the choice.
+ *
+ * `hideCta` drops the primary button for the page it would point at - the
+ * application form offering "Apply" is a link back to itself.
  */
 export function SiteNav({
   role,
   variant,
+  hideCta,
 }: {
   role?: RoleId | "brand";
   variant?: "bare";
+  hideCta?: boolean;
 } = {}) {
   const talent = roleById(role ?? null);
 
@@ -69,12 +74,14 @@ export function SiteNav({
                 {talent.label.toLowerCase()}?
               </button>
             </form>
-            <Link
-              href={`/join?role=${talent.id}`}
-              className="btn btn-primary !px-4 !py-2 !text-xs"
-            >
-              Apply
-            </Link>
+            {!hideCta && (
+              <Link
+                href={`/join?role=${talent.id}`}
+                className="btn btn-primary !px-4 !py-2 !text-xs"
+              >
+                Apply
+              </Link>
+            )}
           </div>
         ) : (
           /* No role chosen. The brand nav that used to live here pointed at

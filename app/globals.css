@@ -303,6 +303,68 @@ main > section + section {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
+/* Phone: one box, two controls. The dialling code is a select sitting inside
+   the same frame as the number, divided by a hairline, so the pair reads as a
+   single field and the number - the part being typed - gets all the room the
+   code does not need. */
+.phone-field {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  overflow: hidden;
+  background: var(--ground-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.phone-field:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.phone-field[data-invalid="true"] {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 2px rgb(192 57 43 / 0.16);
+}
+
+.phone-code {
+  flex: 0 0 auto;
+  width: 6rem;
+  appearance: none;
+  border: 0;
+  border-right: 1px solid var(--line);
+  background-color: transparent;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%238a8a8a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5 6 6.5l5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.625rem center;
+  background-size: 0.65rem;
+  padding: 0.6875rem 1.75rem 0.6875rem 0.875rem;
+  font-size: 0.9375rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.phone-code:focus { outline: none; }
+
+.phone-code option {
+  background: var(--ground-raised);
+  color: var(--ink);
+}
+
+.phone-number {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 0.6875rem 0.875rem;
+  font-size: 0.9375rem;
+  color: var(--ink);
+}
+
+.phone-number:focus { outline: none; }
+.phone-number::placeholder { color: var(--ink-faint); }
+
 .field[aria-invalid="true"] {
   border-color: #c0392b;
   box-shadow: 0 0 0 2px rgb(192 57 43 / 0.16);

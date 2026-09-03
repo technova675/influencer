@@ -82,19 +82,19 @@ export const creatorSubmissionSchema = z
     full_name: z.string().trim().min(2, "Tell us your name").max(120),
     display_name: optionalText,
     email: z.string().trim().toLowerCase().email("That email looks off"),
+    /* Sent as one value - the form joins the picked dialling code and the
+       number before posting - so it is validated as one. */
     phone: z.preprocess(
       blankToUndefined,
       z
-        .string()
+        .string({ message: "Add a phone number we can reach you on" })
         .trim()
-        .regex(/^[+\d][\d\s-]{7,17}$/, "Enter a valid phone number")
-        .optional(),
+        .regex(/^[+\d][\d\s-]{7,17}$/, "Enter a valid phone number"),
     ),
     whatsapp: optionalText,
     bio: z.preprocess(blankToUndefined, z.string().trim().max(800).optional()),
 
     city: optionalText,
-    state: optionalText,
     country: z.string().trim().default("India"),
     languages: z.array(z.enum(LANGUAGES)).max(13).default([]),
 

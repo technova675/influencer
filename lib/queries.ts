@@ -40,7 +40,6 @@ export type CreatorRow = {
   phone: string | null;
   bio: string | null;
   city: string | null;
-  state: string | null;
   languages: string[];
   talent_type: TalentType;
   primary_genre: string;
@@ -93,7 +92,7 @@ export type RosterFilters = {
 
 /** Public roster: approved + featured only, and never contact details. */
 const PUBLIC_COLUMNS =
-  "id,created_at,full_name,display_name,bio,city,state,languages,talent_type,primary_genre," +
+  "id,created_at,full_name,display_name,bio,city,languages,talent_type,primary_genre," +
   "secondary_genres,content_formats,instagram_handle,youtube_handle,tiktok_handle," +
   "x_handle,portfolio_url,profile_photo_path,showcase_media_paths,avg_reel_views,effective_followers," +
   "effective_engagement_rate,is_verified,audience_female_pct,audience_age_band," +

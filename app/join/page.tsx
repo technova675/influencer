@@ -27,7 +27,7 @@ export default async function JoinPage(props: PageProps<"/join">) {
 
   return (
     <>
-      <SiteNav role={role.id} />
+      <SiteNav role={role.id} hideCta />
 
       <main
         className="ground-2 flex-1 px-5 py-14 sm:px-8 sm:py-20"
@@ -56,7 +56,7 @@ export default async function JoinPage(props: PageProps<"/join">) {
               {role.label.toLowerCase()} roster.
             </h1>
             <p className="measure mt-5 leading-relaxed text-ink-soft">
-              Four short steps, and only three fields are compulsory. It is
+              Four short steps, and only four fields are compulsory. It is
               free, you set your own rates, and your phone and email are never
               shown publicly.
             </p>

@@ -9,7 +9,6 @@ const COLUMNS = [
   "email",
   "phone",
   "city",
-  "state",
   "talent_type",
   "primary_genre",
   "secondary_genres",
