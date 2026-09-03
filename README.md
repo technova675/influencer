@@ -46,6 +46,13 @@ Profile photos and showcase video/images live in R2, not in Supabase.
    paste [`r2-cors.json`](r2-cors.json) and change the production origin to
    your real domain.
 
+   An entry is matched against the browser's `Origin` header literally, so it
+   is scheme + host + port and nothing else: `https://example.com`, never
+   `https://example.com/`. A single trailing slash is enough to make every
+   upload from that site fail. Vercel preview deployments each get their own
+   hostname, so uploads only work on the origins listed here - add a preview
+   URL while testing one, or test uploads on production.
+
 Without step 4 uploads fail with a network error and no useful message - it is
 the single most common thing to get wrong.
 
