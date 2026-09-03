@@ -77,11 +77,13 @@ export function SiteNav({
             </Link>
           </div>
         ) : (
-          /* The brand nav is the one place all three are named, because a
-             brand hires across all of them. */
+          /* No role chosen. The brand nav that used to live here pointed at
+             /for-brands and its brief form; with the hiring side reduced to
+             the shortlist bar on the landing page, both links now go there
+             instead. The originals are kept commented below. */
           <div className="flex items-center gap-1 sm:gap-2">
             <Link
-              href="/for-brands#how"
+              href="/#scoring"
               className="mono hidden px-3 py-2 text-xs text-ink-faint transition-colors hover:text-ink sm:inline-flex"
             >
               How it works
@@ -94,9 +96,15 @@ export function SiteNav({
                 I&rsquo;m talent
               </button>
             </form>
+            <Link href="/#shortlist" className="btn btn-primary !px-4 !py-2 !text-xs">
+              Get a shortlist
+            </Link>
+            {/*
+            <Link href="/for-brands#how">How it works</Link>
             <Link href="/for-brands#brief" className="btn btn-primary !px-4 !py-2 !text-xs">
               Send a brief
             </Link>
+            */}
           </div>
         )}
       </nav>
@@ -115,7 +123,7 @@ export function SiteFooter({ role }: { role?: RoleId | "brand" } = {}) {
           <p className="measure mt-2.5 text-sm leading-relaxed text-ink-soft">
             {talent
               ? talent.sells
-              : "Creator Network is part of Adbibe's influencer marketing line — influencers, creators and models, filtered against your brief."}
+              : "Creator Network is part of Adbibe's influencer marketing line — influencers, creators and models, filtered against what you need."}
           </p>
         </div>
 
@@ -143,15 +151,19 @@ export function SiteFooter({ role }: { role?: RoleId | "brand" } = {}) {
             ) : (
               <>
                 <li>
-                  <Link href="/for-brands" className="hover:text-ink">
-                    Why this roster
+                  <Link href="/#shortlist" className="hover:text-ink">
+                    Get a shortlist
                   </Link>
                 </li>
                 <li>
-                  <Link href="/for-brands#how" className="hover:text-ink">
-                    Brief in, shortlist out
+                  <Link href="/#scoring" className="hover:text-ink">
+                    How the roster is scored
                   </Link>
                 </li>
+                {/*
+                <li><Link href="/for-brands">Why this roster</Link></li>
+                <li><Link href="/for-brands#how">Brief in, shortlist out</Link></li>
+                */}
               </>
             )}
           </ul>

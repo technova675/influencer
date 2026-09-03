@@ -8,7 +8,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/for-influencers`, lastModified: now, priority: 0.9 },
     { url: `${base}/for-creators`, lastModified: now, priority: 0.9 },
     { url: `${base}/for-models`, lastModified: now, priority: 0.9 },
-    { url: `${base}/for-brands`, lastModified: now, priority: 0.9 },
+    // Parked with the rest of the brand flow.
+    // { url: `${base}/for-brands`, lastModified: now, priority: 0.9 },
     { url: `${base}/join`, lastModified: now, priority: 0.8 },
   ];
 }

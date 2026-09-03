@@ -12,7 +12,7 @@ export default function NotFound() {
           The page may have moved, or the link may be out of date.
         </p>
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link href="/for-brands" className="btn btn-primary">
+          <Link href="/#shortlist" className="btn btn-primary">
             I&rsquo;m hiring
           </Link>
           <Link href="/join" className="btn btn-ghost">

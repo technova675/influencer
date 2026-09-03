@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { LandingChips } from "@/components/landing-chips";
+import { ShortlistForm } from "@/components/shortlist-form";
 import "./landing.css";
 
 export const metadata: Metadata = {
@@ -15,10 +16,10 @@ export const metadata: Metadata = {
  * deliberately not:
  *
  *   1. The nav's first item reads "Influencer" rather than "Roster", as asked.
- *   2. The four nav destinations and the CTAs point at the real routes rather
- *      than at on-page anchors, so the pages that already exist for each
- *      audience are reachable. "How it's scored" keeps its #scoring anchor,
- *      because that section is on this page.
+ *   2. The nav destinations point at the real routes rather than at on-page
+ *      anchors, so the pages that already exist for each audience are
+ *      reachable. "How it's scored" and "Get a shortlist" are the exceptions:
+ *      both of those sections are on this page.
  *
  * The reference builds the ticker, the ledger and the genre grid from arrays in
  * a trailing <script>. Those arrays are kept verbatim here and rendered on the
@@ -83,7 +84,9 @@ export default function LandingPage() {
             <Link href="/for-creators">For creators</Link>
             <a href="#scoring">How it&apos;s scored</a>
           </nav>
-          <Link href="/for-brands#brief" className="cta-mini">Get a shortlist</Link>
+          {/* The CTA no longer leaves the page. It scrolls to the shortlist bar
+              below, which is the form itself - see components/shortlist-form.tsx. */}
+          <a href="#shortlist" className="cta-mini">Get a shortlist</a>
         </div>
       </header>
 
@@ -92,7 +95,7 @@ export default function LandingPage() {
           <div className="wrap">
             <div className="eyebrow">Adbibe · Performance Marketing / Influencer Line</div>
             <h1>Creators, scored the way we score <em>every other channel.</em></h1>
-            <p className="hero-sub">No portfolios, no PDFs. Every creator on this roster carries the same numbers Adbibe already tracks for paid and programmatic — engagement rate, cost per deliverable, turnaround — so you can brief influencer the way you brief media.</p>
+            <p className="hero-sub">No portfolios, no PDFs. Every creator on this roster carries the same numbers Adbibe already tracks for paid and programmatic — engagement rate, cost per deliverable, turnaround — so influencer is read the way every other line item is.</p>
             <div className="hero-ctas">
               <a href="#roster" className="btn btn-primary">Browse the roster →</a>
               <Link href="/for-creators" className="btn btn-ghost">List yourself, free</Link>
@@ -113,6 +116,8 @@ export default function LandingPage() {
             <div className="stat"><div className="num">48h</div><div className="lbl">Avg. shortlist time</div></div>
           </div>
         </section>
+
+        <ShortlistForm />
 
         <section id="lanes-section">
           <div className="wrap">
@@ -181,7 +186,7 @@ export default function LandingPage() {
                     <div className="cell"><span className="cell-lbl">Reach</span><span className="cell-val">{c.reach}</span></div>
                     <div className="cell"><span className="cell-lbl">Engagement</span><span className="cell-val pos">{c.er}</span></div>
                     <div className="cell"><span className="cell-lbl">Rate from</span><span className="cell-val">{c.rate}</span></div>
-                    <Link href="/for-brands#brief" className="row-cta">Shortlist →</Link>
+                    <a href="#shortlist" className="row-cta">Shortlist →</a>
                   </div>
                 ))}
               </div>
@@ -193,7 +198,7 @@ export default function LandingPage() {
           <div className="wrap">
             <div className="section-head">
               <div>
-                <div className="section-tag">Every genre a brief asks for</div>
+                <div className="section-tag">Every genre we cover</div>
                 <h2>Sorted the way a client thinks about it.</h2>
               </div>
             </div>
@@ -227,11 +232,16 @@ export default function LandingPage() {
               <div className="score-card">
                 <div className="score-idx">03 / Track</div>
                 <h4>Delivery history, kept on file</h4>
-                <p>Turnaround time and brief adherence from past campaigns follow the profile — reliability becomes a filterable stat.</p>
+                <p>Turnaround time and delivery on past campaigns follow the profile — reliability becomes a filterable stat.</p>
               </div>
             </div>
           </div>
         </section>
+
+        {/* The brand section is parked, not deleted. The whole hiring side is
+            one form now - the shortlist bar above - so a second panel selling
+            the same thing in brief-and-budget language was saying it twice.
+            Restore this when the brand flow comes back.
 
         <section id="brands">
           <div className="wrap final" style={{ padding: "64px 48px", borderRadius: 2 }}>
@@ -248,6 +258,8 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        */}
 
         <section id="creators" style={{ paddingTop: 56 }}>
           <div className="wrap">
@@ -268,7 +280,7 @@ export default function LandingPage() {
           <div>© 2026 <Link href="/">Adbibe</Link> — Creator Network is part of Adbibe&apos;s influencer marketing line.</div>
           <div className="foot-links">
             <Link href="/for-influencers">Influencer</Link>
-            <Link href="/for-brands">For brands</Link>
+            {/* <Link href="/for-brands">For brands</Link> */}
             <Link href="/for-creators">For creators</Link>
           </div>
         </div>

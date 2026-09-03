@@ -454,3 +454,64 @@ update public.creators
 
 alter table public.creators
   alter column talent_type_changed_at set default now();
+
+-- ---------------------------------------------------------------------------
+-- shortlist_requests (added Sep 2026)
+--
+-- The inline "Get a shortlist" bar on the landing page. It replaces the old
+-- brand route and its long brief form: one row of fields, one submit, no
+-- second page. Everything here is what somebody hiring can answer without
+-- looking anything up, which is the whole point - a request that takes thirty
+-- seconds gets sent, and a brief that takes ten minutes does not.
+--
+-- Deliberately NOT joined to `creators`. This table records the ask; which
+-- profiles end up on the shortlist is decided by the agency team afterwards
+-- and lives outside the product for now.
+-- ---------------------------------------------------------------------------
+do $$ begin
+  create type shortlist_status as enum ('new', 'contacted', 'sent', 'closed');
+exception when duplicate_object then null; end $$;
+
+create table if not exists public.shortlist_requests (
+  id             uuid primary key default gen_random_uuid(),
+  created_at     timestamptz not null default now(),
+
+  -- what they're looking for. talent_type reuses the roster's own enum, so a
+  -- request is filtered with exactly the same vocabulary the roster is.
+  talent_type    talent_type not null,
+  genre          text,
+  city           text,
+
+  -- who's asking
+  full_name      text not null check (length(trim(full_name)) between 2 and 120),
+  email          text not null,
+  contact_handle text check (contact_handle is null or length(contact_handle) <= 160),
+  note           text check (note is null or length(note) <= 1000),
+
+  -- agency-internal
+  status         shortlist_status not null default 'new',
+  internal_notes text,
+
+  -- anti-abuse
+  submitted_ip         inet,
+  submitted_user_agent text
+);
+
+do $$ begin
+  alter table public.shortlist_requests
+    add constraint shortlist_requests_email_format
+    check (position('@' in email) > 1 and position('.' in split_part(email, '@', 2)) > 1);
+exception when duplicate_object then null; end $$;
+
+create index if not exists shortlist_requests_status_idx  on public.shortlist_requests (status);
+create index if not exists shortlist_requests_created_idx on public.shortlist_requests (created_at desc);
+
+-- Same rule as every other public form: anon may insert and may not read back.
+alter table public.shortlist_requests enable row level security;
+
+drop policy if exists "anon can request a shortlist" on public.shortlist_requests;
+create policy "anon can request a shortlist"
+  on public.shortlist_requests for insert to anon, authenticated
+  with check (true);
+
+-- No select / update / delete policy for anon => denied by default. Intentional.

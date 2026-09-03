@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     type: "website",
     title: "Adbibe",
     description:
-      "Influencers, creators and models, filtered by what a brand actually needs. Shortlist in minutes.",
+      "Influencers, creators and models, filtered by what you actually need. Shortlist in minutes.",
   },
   robots: { index: true, follow: true },
 };

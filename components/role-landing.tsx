@@ -240,7 +240,9 @@ export function RoleLanding({ role }: { role: Role }) {
               >
                 {role.hero.cta} &rarr;
               </Link>
-              <Link href="/for-brands" className="btn btn-ghost w-full sm:w-auto">
+              {/* Was /for-brands; the hiring side is the shortlist bar on the
+                  landing page now. */}
+              <Link href="/#shortlist" className="btn btn-ghost w-full sm:w-auto">
                 I&rsquo;m hiring, not applying
               </Link>
             </div>

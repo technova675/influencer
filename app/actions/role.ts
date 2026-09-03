@@ -18,12 +18,15 @@ export async function chooseRole(formData: FormData) {
   const role = roleById(String(formData.get("role") ?? ""));
 
   // "brand" is a valid door but not a talent role, so it is handled here
-  // rather than living in ROLES.
+  // rather than living in ROLES. The page it used to open is parked in
+  // app/_for-brands (a leading underscore keeps a folder out of the router),
+  // so the door now lands on the shortlist bar instead.
   if (!role) {
     if (String(formData.get("role")) === "brand") {
       const jar = await cookies();
       jar.set(ROLE_COOKIE, "brand", { path: "/", maxAge: YEAR, sameSite: "lax" });
-      redirect("/for-brands");
+      // redirect("/for-brands");
+      redirect("/#shortlist");
     }
     redirect("/");
   }

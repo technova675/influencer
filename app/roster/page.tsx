@@ -199,13 +199,15 @@ function Gate() {
               else&rsquo;s.
             </p>
             <p className="measure mt-4 leading-relaxed text-ink-soft">
-              <strong className="font-medium text-ink">Hiring?</strong> Send us
-              the brief and we&rsquo;ll come back with a shortlist — the
-              profiles that fit it, and nothing else.
+              <strong className="font-medium text-ink">Hiring?</strong> Tell us
+              who you need and we&rsquo;ll come back with a shortlist — the
+              profiles that fit, and nothing else.
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <Link href="/for-brands" className="btn btn-accent">
-                Send us a brief
+              {/* Was /for-brands and its brief form; the request is one inline
+                  form on the landing page now. */}
+              <Link href="/#shortlist" className="btn btn-accent">
+                Get a shortlist
               </Link>
               <Link href="/join" className="btn btn-ghost">
                 I&rsquo;m talent — add me
